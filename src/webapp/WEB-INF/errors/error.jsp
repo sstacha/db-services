@@ -1,0 +1,1 @@
+<%= request.getAttribute("javax.servlet.error.status_code") + " - " + request.getAttribute("javax.servlet.error.message") %>

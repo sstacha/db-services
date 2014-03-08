@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<!-- NOTE: build file is expected in the src dir.  Otherwise paths are not right -->
+<project name="dbServices" default="all" basedir=".">
+	<echo message="********** SETTING GLOBAL PROPERTIES **********"/>
+	<!-- set up default values for all library builds -->
+	<property name="dir.dist" value="../dist"/>
+	<property name="dir.src" value="."/>
+	<property name="dir.build" value="../build"/>
+    <property name="dir.javadoc" value="../javadoc"/>
+	<property name="dir.src.code" value="./code"/>
+	<property name="dir.src.lib" value="./lib"/>
+    <property name="dir.src.lib-dist" value="./lib-dist"/>
+    <property name="dir.src.webapp" value="./webapp"/>
+	<property name="dir.build.code" value="../build/code"/>
+	<property name="dir.build.classes" value="../build/classes"/>
+    <property name="dir.build.webapp" value="../build/webapp"/>
+
+	<target name="all" depends="clean, build" description="clear everything; compile and deploy to dist directory">
+		<echo message="----------------------------------------------"/>
+		<echo message="--------- complete rebuild finished ----------"/>
+		<echo message="----------------------------------------------"/>
+	</target>
+
+	<target name="clean" description="remove all generated files">
+		<echo message="********** CLEANING **********"/>
+		<delete dir="${dir.build}"/>
+		<delete dir="${dir.dist}"/>
+        <delete dir="${dir.javadoc}"/>
+        <echo message="********** CLEANED **********"/>
+	</target>
+
+	<target name="build" depends="build.prepare, build.compile, build.javadoc, build.jar, build.webapp">
+		<echo message="finished building..." />
+	</target>
+
+    <target name="build.prepare" depends="build.prepare.properties, build.prepare.classpath, build.prepare.directories">
+        <echo message="finished preparing..." />
+    </target>
+
+	<target name="build.prepare.properties">
+		<echo message="********** BUILDING LOCAL PROPERTIES **********"/>
+		<!-- set some logic variables to determine what source directories we have -->
+	    <available file="${dir.src.code}" type="dir" property="dir.src.code.exists"/>
+        <available file="${dir.src.lib-dist}" type="dir" property="dir.src.lib.dist.exists"/>
+        <available file="${dir.src.webapp}" type="dir" property="dir.src.webapp.exists"/>
+
+		<echo message="********** DEBUGGING **********"/>
+		<!-- echo out what was either passed in via command line or props file -->
+		<echo message="------------------- vars -------------------"/>
+        <echo message="dir.src.code.exists: ${dir.src.code.exists}"/>
+        <echo message="dir.src.lib-dist.exists: ${dir.src.lib.dist.exists}"/>
+        <echo message="dir.src.webapp.exists: ${dir.src.webapp.exists}"/>
+		<echo message="---------------------------------------------"/>
+    </target>
+
+	<target name="build.prepare.classpath" if="dir.src.code.exists">
+        <echo message="********** BUILDING CLASSPATH **********"/>
+        <!-- set up the classpath for use throughout the buildfile -->
+        <path id="project.classpath">
+            <!-- include all libraries in the source lib and lib-dist folders  -->
+            <fileset  dir="${dir.src.lib}">
+                <include name="*.jar"/>
+            </fileset>
+            <fileset dir="${dir.src.lib-dist}" includes="*.jar"/>
+        </path>
+        <!-- NOTE: these 2 props are unix based and should be only used for echoing -->
+        <pathconvert targetos="unix" property="dir.classpath" refid="project.classpath"/>
+        <echo message="----------------- classpath -----------------"/>
+        <echo message="dir.classpath: ${dir.classpath}"/>
+        <echo message="---------------------------------------------"/>
+	</target>
+
+	<target name="build.prepare.directories">
+		<echo message="********** BUILDING NEEDED DIRECTORIES **********"/>
+		<tstamp><format property="now" pattern="MMM d yyyy hh:mm aa"/></tstamp>
+		<!-- make directories if they don't exist -->
+        <mkdir dir="${dir.javadoc}"/>
+        <mkdir dir="${dir.build.code}"/>
+		<mkdir dir="${dir.build.classes}"/>
+        <mkdir dir="${dir.build.webapp}"/>
+		<mkdir dir="${dir.dist}"/>
+        <echo message="********** DIRECTORIES BUILT **********"/>
+	</target>
+
+    <!-- compile java to classes for code and tests -->
+    <target name="build.compile" depends="build.compile.code">
+        <echo message="finished compiling..." />
+    </target>
+
+    <target name="build.compile.code" if="dir.src.code.exists">
+        <echo message="********** SETTING UP SOURCE FOR COMPILE/DOCS **********"/>
+        <!-- copy all src code to the build src dir (substiute strings for version / date info) -->
+        <copy todir="${dir.build.code}">
+            <fileset dir="${dir.src.code}" excludes=".DS_Store"/>
+            <!-- replace %BUILD_DATE! -->
+            <!-- TODO: figure out how to do auto-incrementing of version via config files -->
+            <filterset begintoken="%" endtoken="!">
+                <filter token="BUILD_DATE" value="${now}"/>
+                <filter token="VERSION" value="${now}"/>
+            </filterset>
+            <!-- NOTE: use <exclude name=".cvsignore"> tags if more is needed -->
+        </copy>
+        <echo message="********** COMPILING **********"/>
+        <!-- simple compile tag, but note the debug variable; change if needed -->
+        <javac srcdir="${dir.build.code}" destdir="${dir.build.classes}" debug="on" deprecation="on">
+            <classpath refid="project.classpath"/>
+        </javac>
+    </target>
+
+	<!-- generate java docs for anything we are creating -->
+	<target name="build.javadoc" if="dir.src.code.exists">
+		<echo message="********** GENERATING DOCS **********"/>
+		<javadoc author="true" classpathref="project.classpath"
+				destdir="${dir.javadoc}" packagenames="*"
+				sourcepath="${dir.build.code}" use="true" version="true"/>
+	</target>
+
+	<!-- build jar for any classes we compiled -->
+	<target name="build.jar" if="dir.src.code.exists">
+		<jar jarfile="${dir.dist}/${ant.project.name}.jar" basedir="${dir.build.classes}"/>
+	</target>
+
+    <target name="build.webapp.code">
+        <echo message="********** BUILDING WEB APPLICATION **********"/>
+        <!-- copy all src webapp to the build webapp dir -->
+        <copy todir="${dir.build.webapp}">
+            <fileset dir="${dir.src.webapp}" excludes=".DS_Store"/>
+        </copy>
+        <!-- copy our built jar if there is one to {build.webapp}/web-inf/lib -->
+        <!-- NOTE: otherwise build should be empty of all other jars -->
+        <copy todir="${dir.build.webapp}/WEB-INF/lib">
+            <fileset dir="${dir.dist}" includes="*.jar"/>
+        </copy>
+    </target>
+
+    <target name="build.webapp.src.lib" if="dir.src.lib.dist.exists">
+        <echo message="********** PACKAGING SOURCE LIBS **********"/>
+        <copy todir="${dir.build.webapp}/WEB-INF/lib">
+            <fileset dir="${dir.src.lib-dist}" excludes=".DS_Store" />
+        </copy>
+    </target>
+
+    <target name="build.webapp" if="dir.src.webapp.exists" depends="build.webapp.code, build.webapp.src.lib">
+	    <echo message="********** PACKAGING WAR TO DIST **********"/>
+        <!-- create the war file and place in the bin directory -->
+        <jar jarfile="${dir.dist}/ds.war" basedir="${dir.build.webapp}"/>
+        <!-- create the unzipped application folder for easy deployment -->
+        <copy todir="${dir.dist}/ds">
+            <fileset dir="${dir.build.webapp}"  excludes=".DS_Store"/>
+        </copy>
+    </target>
+
+</project>

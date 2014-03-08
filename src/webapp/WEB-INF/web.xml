@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app id="starter" version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+	<display-name>Data Services</display-name>
+
+	<!-- Filters -->
+    <filter>
+        <filter-name>noCacheFilter</filter-name>
+        <filter-class>com.innavace.ds.filter.NoCacheFilter</filter-class>
+    </filter>
+    <filter>
+        <filter-name>dataFilter</filter-name>
+        <filter-class>com.innavace.ds.filter.DataFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>noCacheFilter</filter-name>
+        <url-pattern>/_data/*</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>noCacheFilter</filter-name>
+        <url-pattern>/_system/*</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>noCacheFilter</filter-name>
+        <url-pattern>/console/*</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>dataFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+	<!-- Listeners -->
+    <listener>
+       <listener-class>com.innavace.ds.listener.ApplicationListener</listener-class>
+    </listener>
+
+    <!-- Servlets -->
+    <servlet>
+        <servlet-name>dataServices</servlet-name>
+        <servlet-class>com.innavace.ds.DataProvider</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>systemServices</servlet-name>
+        <servlet-class>com.innavace.ds.SystemProvider</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>dataServices</servlet-name>
+        <url-pattern>/_data/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>systemServices</servlet-name>
+        <url-pattern>/_system/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome file lists -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+    <error-page>
+        <error-code>401</error-code>
+        <location>/WEB-INF/errors/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/WEB-INF/errors/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/errors/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>503</error-code>
+        <location>/WEB-INF/errors/error.jsp</location>
+    </error-page>
+</web-app>
