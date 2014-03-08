@@ -1,0 +1,78 @@
+<!--
+    Document   : todo
+    Created on : Jan 10, 2013, 9:27:27 AM
+    Author     : sstacha
+    Simple examle page showing how to consume ajax data based on the 5 min tutorial.
+-->
+<html>
+    <head>
+        <title>Example todo application</title>
+        <link rel=stylesheet href=todo.css type=text/css>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script>
+            function listTodos() {
+                // build the todo list from the data given and attach to the todo_list div
+                // NOTE: when we click on an element we want to populate the form data for that element for updating
+                $('#todo_list').empty();
+                $.getJSON("/ds/todo", function(data){
+                    var completedText;
+                    $(data).each(function(i, value){
+                        if (value.completed == '1')
+                            completedText = " (Completed)";
+                        else
+                            completedText = "";
+                        $('#todo_list').append('<div class="clickable_div" onClick="javascript:clickTodo(\''+value.item+'\', \'' +value.completed+'\')">'+value.item+completedText+'</div>');
+                    });
+                });
+            }
+            function clickTodo(item, completed) {
+                $("#tf_todo").val(item);
+                $("#tf_id").val(item);
+                $("#tf_completed").val(completed);
+                if (completed == '1')
+                    $("#tf_completed_tgr").prop('checked', true);
+                else
+                    $("#tf_completed_tgr").prop('checked', false);
+            }
+            function clickCompleted() {
+                $("#tf_completed").val(($("#tf_completed_tgr").prop("checked") ? "1" : "0"));
+            }
+            function updateTodo() {
+                var form = $("#todo_form");
+                $.ajax({type: form.attr('method'),
+                        url: form.attr('action'),
+                        data: form.serialize(),
+                        success: function(data) {
+                            alert("saved connection: " + data);
+                            listTodos();
+                        }
+                    }).fail(function(jqXHR, textStatus) {
+                        alert( "Save Request failed: " + jqXHR.responseText );
+                    });
+                return false;
+            }
+            $(document).ready(function() {
+                listTodos();
+            });        
+        </script>
+    </head>
+    <body>
+        <h2>TODO List:</h2>
+        <div id="todo_list">
+
+        </div>
+        <br>
+        <br>
+        <form id="todo_form" method="PUT" action="/ds/todo" onSubmit="javascript:return updateTodo();">
+        <fieldset>
+            <label for="tf_todo">Todo</label>
+            <input type="text" id="tf_todo" name="todo" style="width: 300px;"/><br>
+            <input type="hidden" id="tf_completed" name="completed"/>
+            <input type="hidden" id="tf_id" name="id"/>
+            <label for="tf_completed_tgr">Completed</label><input type="checkbox" id="tf_completed_tgr" onClick="javascript:clickCompleted();"/><br>
+            <button id="tf_submit">Submit</button>
+        </fieldset>
+        </form>
+
+    </body>
+</html>
