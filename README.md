@@ -4,7 +4,7 @@ db-services
 Database Web Services Application - Expose database results as REST web services without any coding
 
 ### Requirements
-	This application requires Tomcat application server.  It may work in other application servers but has not been tested. It is assumed you have already installed Tomcat and have verified the it is working.  If not please search for Apache Tomcat and install the latest server.
+>This application requires Tomcat application server.  It may work in other application servers but has not been tested. It is assumed you have already installed Tomcat and have verified the it is working.  If not please search for Apache Tomcat and install the latest server.
 	
 ### Install Instructions:
   1. download the latest application war file (ds.war) from the bin directory on github
