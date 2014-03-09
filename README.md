@@ -3,6 +3,16 @@ db-services
 
 Database Web Services Application - Expose database results as REST web services without any coding
 
+### Requirements
+	This application requires Tomcat application server.  It may work in other application servers but has not been tested. It is assumed you have already installed Tomcat and have verified the it is working.  If not please search for Apache Tomcat and install the latest server.
+	
+### Install Instructions:
+  1. download the latest application war file (ds.war) from the bin directory on github
+  2. copy ds.war from your downloads directory into the <install dir>/webapps/ tomcat directory
+  3. start tomcat if not already running
+  4. open browser to http://localhost:8080/ds/console
+  5. walk through the Getting Started in 5min wiki page
+  
 ### Why another project?
 
 A simple search shows there are many good libraries, apis and frameworks for exposing information over REST so why another project?  I was looking for an application that I could configure exposing database information over REST without any programming.  I wanted presentation coders (HTML5 and javascript) to rapidly build out what they need for developing pages without needing to know server side languages, install and manage databases etc.  This is my attempt at such a product.  The current version is useable but I would definitely consider it in BETA state.  
