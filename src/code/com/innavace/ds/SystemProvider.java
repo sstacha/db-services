@@ -20,6 +20,7 @@ import com.innavace.ds.config.ConfigurationHandler;
 import com.innavace.ds.config.ConnectionHandler;
 import com.innavace.ds.upload.XMLConfigurationUploader;
 import com.innavace.ds.upload.XMLConnectionUploader;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
@@ -141,9 +142,12 @@ public class SystemProvider extends HttpServlet
                 ConnectionHandler.test(name, type, request.getParameter("jndi-context"),
                         request.getParameter("jndi-name"), request.getParameter("driver"), request.getParameter("url"),
                         request.getParameter("login"), request.getParameter("password"));
+                response.setContentType("application/json");
+                String sresult = "{\"status\": \"Connection Successful\"}";
+                response.getOutputStream().write(sresult.getBytes("UTF-8"));
+                response.flushBuffer();
             }
-            catch (Exception ex) {throw new ServletException(ex);}
-            response.getOutputStream().print("true");
+            catch (Exception ex) {response.sendError(500, ex.toString());}
             response.flushBuffer();
         }
         else if (dsPath.equalsIgnoreCase("/_system/connections/refresh")) {
@@ -154,9 +158,31 @@ public class SystemProvider extends HttpServlet
         }
         else if (dsPath.equalsIgnoreCase("/_system/connections/download")) {
             try {
+                String nameFilter = request.getParameter("nameFilter");
                 response.setContentType("application/xml");
-                String xml = ConnectionHandler.toXML();
-                response.setHeader("Content-Disposition", "attachment; filename=\"connections.xml\"");
+                StringBuffer extension = new StringBuffer();
+                String xml = ConnectionHandler.toXML(nameFilter);
+                // we tack on the filter part to the end of the filename to later identify the download better
+                if (nameFilter == null || nameFilter.equalsIgnoreCase("*") || nameFilter.equalsIgnoreCase("all"))
+                    nameFilter = "";
+                // name filter just replace the spaces and special chars with underscores
+                if (nameFilter.length() > 0) {
+                    nameFilter = nameFilter.replaceAll(" ", "_").toLowerCase();
+                    nameFilter = nameFilter.replaceAll("[^a-zA-Z0-9.-]", "_");
+                    // few other tricks:
+                    // cant start or end with a dot; while valid in unix we don't want our export files to ever be hidden
+                    if (nameFilter.startsWith("."))
+                        nameFilter = nameFilter.substring(1);
+                    if (nameFilter.endsWith("."))
+                        nameFilter = nameFilter.substring(0, nameFilter.length() - 2);
+                    extension.append("-").append(nameFilter.toLowerCase());
+                }
+                // Last: cant be more than 240 characters - the static text for the filename
+                int staticLength = "connections".length() + ".xml".length();
+                if (extension.length() > (240 - staticLength))
+                    extension.setLength((240 - staticLength));
+
+                response.setHeader("Content-Disposition", "attachment; filename=\"connections" + extension.toString() + ".xml\"");
                 response.setContentLength(xml.length());
                 response.getOutputStream().print(xml);
                 response.flushBuffer();
@@ -210,14 +236,51 @@ public class SystemProvider extends HttpServlet
         }
         else if (dsPath.equalsIgnoreCase("/_system/configurations/download")) {
             try {
-                String filter = request.getParameter("filter");
+                String pathFilter = request.getParameter("pathFilter");
+                String tagFilter = request.getParameter("tagFilter");
                 response.setContentType("application/xml");
-                String xml = ConfigurationHandler.toXML(filter);
-                if (filter == null || filter.equalsIgnoreCase("*") || filter.equalsIgnoreCase("all"))
-                    filter = "";
-                if (filter.length() > 0)
-                    filter = "-" + filter;
-                response.setHeader("Content-Disposition", "attachment; filename=\"configurations" + filter + ".xml\"");
+                StringBuffer extension = new StringBuffer();
+                String xml = ConfigurationHandler.toXML(pathFilter, tagFilter);
+                // we tack on the filter part to the end of the filename to later identify the download better
+                if (pathFilter == null || pathFilter.equalsIgnoreCase("*") || pathFilter.equalsIgnoreCase("all"))
+                    pathFilter = "";
+                if (pathFilter.length() > 0) {
+                    // path filter just replace the spaces and special chars with underscores
+                    pathFilter = pathFilter.replaceAll(" ", "_").toLowerCase();
+                    pathFilter = pathFilter.replaceAll("[^a-zA-Z0-9.-]", "_");
+                    // few other tricks:
+                    // cant start or end with a dot; while valid in unix we don't want our export files to ever be hidden
+                    if (pathFilter.startsWith("."))
+                        pathFilter = pathFilter.substring(1);
+                    if (pathFilter.endsWith("."))
+                        pathFilter = pathFilter.substring(0, pathFilter.length() - 2);
+                    extension.append("-").append(pathFilter.toLowerCase());
+                }
+                // tag filter is a bit more complicated as we have to only use directory approved characters
+                //      we need to obfuscate && and || so they work.  we will use underscores for spaces and
+                //      words for the && and || or.
+                if (tagFilter == null)
+                    tagFilter = "";
+                if (tagFilter.length() > 0) {
+                    tagFilter = tagFilter.replaceAll(" ", "_").toLowerCase();
+                    tagFilter = tagFilter.replaceAll("&&", "and");
+                    tagFilter = tagFilter.replaceAll("\\|\\|", "or");
+                    tagFilter = tagFilter.replaceAll(":", "#");
+                    tagFilter = tagFilter.replaceAll("[^a-zA-Z0-9.-\\\\!#]", "_");
+                    // few other tricks:
+                    // cant start or end with a dot; while valid in unix we don't want our export files to ever be hidden
+                    if (tagFilter.startsWith("."))
+                        tagFilter = tagFilter.substring(1);
+                    if (tagFilter.endsWith("."))
+                        tagFilter = tagFilter.substring(0, tagFilter.length() - 2);
+                    extension.append("-").append(tagFilter);
+                }
+                // Last: cant be more than 240 characters - the static text for the filename
+                int staticLength = "configurations".length() + ".xml".length();
+                if (extension.length() > (240 - staticLength))
+                    extension.setLength(240 - staticLength);
+
+                response.setHeader("Content-Disposition", "attachment; filename=\"configurations" + extension.toString() + ".xml\"");
                 response.setContentLength(xml.length());
                 response.getOutputStream().print(xml);
                 response.flushBuffer();
@@ -282,6 +345,22 @@ public class SystemProvider extends HttpServlet
                 t.printStackTrace ();
                 response.sendError(500, t.toString());
             }
+        }
+        else if (dsPath.equalsIgnoreCase("/_system/log/level/set")) {
+            // attempt to set the global log level runtime for the server
+            String requestLevel = request.getParameter("log_level");
+            if (requestLevel != null && (requestLevel.equalsIgnoreCase("debug") || requestLevel.equalsIgnoreCase("info") || requestLevel.equalsIgnoreCase("warn"))) {
+                Logger rootLogger = Logger.getRootLogger();
+                if (requestLevel.equalsIgnoreCase("debug"))
+                    rootLogger.setLevel(Level.DEBUG);
+                else if(requestLevel.equalsIgnoreCase("info"))
+                    rootLogger.setLevel(Level.INFO);
+                else if(requestLevel.equalsIgnoreCase("warn"))
+                    rootLogger.setLevel(Level.WARN);
+                response.getOutputStream().print("log level: " + rootLogger.getLevel());
+            }
+            else
+                response.sendError(404, "Missing log_level parameter; must be one of ['debug', 'info', 'warn']");
         }
         else if (dsPath.equalsIgnoreCase("/_system/boom")) {
             response.sendError(500, "Test Exception ");

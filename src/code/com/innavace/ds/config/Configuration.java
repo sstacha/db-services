@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -91,6 +92,223 @@ public class Configuration
         return execute(parameterMap, responseType, action);
     }
 
+    private boolean hasOption (String option, String[] options) {
+        for (String opt : options) {
+            if (opt.trim().equalsIgnoreCase(option.trim()))
+                return true;
+        }
+        return false;
+    }
+
+    private String getOptType (String[] opts) {
+        // look for a one char option;
+        String type = "s";
+        for (String opt : opts) {
+            if (opt.trim().length() == 1) {
+                type = opt.trim();
+            }
+        }
+        return type;
+    }
+    private int getSqlType(String type) {
+        if (type.equalsIgnoreCase("i") || type.equalsIgnoreCase("l"))
+            return Types.INTEGER;
+        if (type.equalsIgnoreCase("f"))
+            return Types.FLOAT;
+        if (type.equalsIgnoreCase("d"))
+            return Types.DOUBLE;
+        if (type.equalsIgnoreCase("t"))
+            return Types.TIMESTAMP;
+        if (type.equalsIgnoreCase("t"))
+            return Types.DATE;
+        if (type.equalsIgnoreCase("a"))
+            return Types.ARRAY;
+        return Types.VARCHAR;
+    }
+
+    private String getOutParameterResults (PreparedStatement ps, Map<String, String[]> parameterMap, List<String> options)
+        throws SQLException {
+        int paramIdx = 0;
+        // if we have parameters lets replace them in the order the parameter was received
+        // NOTE: if a parameter is sent 2x then we only pick the first
+        //      ex: a=1,b=2,a=3,c=3 : ?1=[a->1] ?2=[b->2] ?3=[c->3] ?4=error
+        // get our string keys in order array
+        Set<String> keyset = parameterMap.keySet();
+        String[] keys = keyset.toArray(new String[options.size()]);
+        String[] opts;
+        String optType;
+        // we are trying to map our passed parameter names to the ordinal questionmarks; if we have more questionmarks than keys lets make some up
+        for (int i=0; i<options.size(); i++)
+            // if we have a parameter set the key and value; else set defaults
+            if (i >= parameterMap.size())
+                keys[i] = "p" + i;
+
+        StringBuilder buffer = new StringBuilder(100);
+        buffer.append("{");
+        buffer.append("\"cs\":true");
+        for (String option : options) {
+            opts = option.split(":");
+            optType = getOptType(opts);
+            if (ps instanceof CallableStatement) {
+                if (hasOption("out", opts)) {
+                    buffer.append(", ");
+                    // add our key and return value according to data type
+                    if (optType.equalsIgnoreCase("l"))
+                        buffer.append("\"").append(keys[paramIdx]).append("\":").append(((CallableStatement) ps).getLong((paramIdx + 1)));
+                    else if (optType.equalsIgnoreCase("i"))
+                        buffer.append("\"").append(keys[paramIdx]).append("\":").append(((CallableStatement) ps).getInt((paramIdx + 1)));
+                    else if (optType.equalsIgnoreCase("f"))
+                        buffer.append("\"").append(keys[paramIdx]).append("\":").append(((CallableStatement) ps).getFloat((paramIdx + 1)));
+                    else if (optType.equalsIgnoreCase("d"))
+                        buffer.append("\"").append(keys[paramIdx]).append("\":").append(((CallableStatement) ps).getDouble((paramIdx + 1)));
+                    else if (optType.equalsIgnoreCase("t"))
+                        buffer.append("\"").append(keys[paramIdx]).append("\":").append(((CallableStatement) ps).getTimestamp((paramIdx + 1)));
+                    else
+                        buffer.append("\"").append(keys[paramIdx]).append("\":\"").append(((CallableStatement) ps).getString((paramIdx + 1))).append("\"");
+                }
+            } else {
+                log.debug("parameter: " + paramIdx + " - not callable statements skipping setting out params...");
+            }
+            paramIdx++;
+        }
+        buffer.append("}");
+        return buffer.toString();
+    }
+
+    private void setParametersStatic(PreparedStatement ps, Map<String, String[]> parameterMap, List<String> options)
+        throws SQLException {
+        ps.setString(1, "testing");
+        ((CallableStatement) ps).registerOutParameter(2, Types.VARCHAR);
+        ((CallableStatement) ps).registerOutParameter(3, Types.INTEGER);
+    }
+
+    private void setParameters(PreparedStatement ps, Map<String, String[]> parameterMap, List<String> options)
+        throws SQLException {
+        int paramIdx = 0;
+        // if we have parameters lets replace them in the order the parameter was received
+        // NOTE: if a parameter is sent 2x then we only pick the first
+        //      ex: a=1,b=2,a=3,c=3 : ?1=[a->1] ?2=[b->2] ?3=[c->3] ?4=error
+        // get our string keys in order array
+        Set<String> keyset = parameterMap.keySet();
+        String[] keys = keyset.toArray(new String[options.size()]);
+        String[] values = new String[options.size()];
+        String[] opts;
+        String optType;
+        // we are trying to map our passed parameter names to the ordinal questionmarks; if we have more questionmarks than keys lets make some up
+        for (int i=0; i<options.size(); i++) {
+            // if we have a parameter set the key and value; else set defaults
+            if (i < parameterMap.size()) {
+                values[i] = parameterMap.get(keys[i])[0];
+            }
+            else {
+                keys[i] = "p" + i;
+                values[i] = "";
+            }
+        }
+        for (String option : options) {
+            log.debug("param index [" + paramIdx + "]: " + keys[paramIdx] + " - " + showNulls(values[paramIdx]));
+            // todo : currently getting 0 value, however, in the future look for [i] given pipe extension in the configuration
+            opts = option.split(":");
+            optType = getOptType(opts);
+            if (ps instanceof CallableStatement) {
+                if (hasOption("out", opts)) {
+                    log.debug("registering output parameter: " + (paramIdx + 1) + " - " + getSqlType(optType));
+                    ((CallableStatement) ps).registerOutParameter((paramIdx + 1), getSqlType(optType));
+                    if (hasOption("in", opts))
+                        setParameter(ps, optType, (paramIdx + 1), values[paramIdx]);
+                }
+                else
+                    setParameter(ps, optType, (paramIdx + 1), values[paramIdx]);
+            }
+            else
+                setParameter(ps, optType, (paramIdx + 1), values[paramIdx]);
+
+            paramIdx++;
+        }
+    }
+
+    // convert nulls to a printable value
+    private String showNulls(String value) {
+        if (value == null)
+            return "#null#";
+        return value;
+    }
+
+    // since we need to call the same logic in several places im pulling this out to a function
+    private void setParameter(PreparedStatement ps, String optType, int index, String value)
+        throws SQLException {
+
+        log.debug("setting parameter: " + index + " - " + showNulls(value));
+        log.debug("parameter value is null?: " + (value == null));
+//        if (value == null) {
+//            log.debug("detected null value; setting null parameter for type [" + optType + "]...");
+//            ps.setNull(index, getSqlType(optType));
+//            return;
+//        }
+        if (optType.equalsIgnoreCase("l"))
+            ps.setLong(index, Convert.toLng(value));
+        else if (optType.equalsIgnoreCase("i"))
+            ps.setInt(index, Convert.toInt(value));
+        else if (optType.equalsIgnoreCase("f"))
+            ps.setFloat(index, Convert.toFlt(value));
+        else if (optType.equalsIgnoreCase("d"))
+            ps.setDouble(index, Convert.toDbl(value));
+        else if (optType.equalsIgnoreCase("t")) {
+            Date date = Convert.toDate(value);
+            if (date == null)
+                ps.setTimestamp(index, null);
+            else
+                ps.setTimestamp(index, new Timestamp(date.getTime()));
+        }
+        else
+            ps.setString(index, value);
+
+    }
+
+    private void setParametersOld(PreparedStatement ps, Map<String, String[]> parameterMap, List<String> options)
+        throws SQLException {
+        // for each option; set the ordinal parameter to the correct type
+        int paramIdx = 0;
+        // if we have parameters lets replace them in the order the parameter was received
+        // NOTE: if a parameter is sent 2x then we only pick the first
+        //      ex: a=1,b=2,a=3,c=3 : ?1=[a->1] ?2=[b->2] ?3=[c->3] ?4=error
+        // get our string keys in order array
+        Set<String> keyset = parameterMap.keySet();
+        String[] keys = keyset.toArray(new String[keyset.size()]);
+        for (String option : options) {
+            // setting each ? parameter in the prepared statement according to the parameter passed to us by position
+            if (keys.length < paramIdx)
+                throw new SQLException("Exception setting passed parameters to sql statement.  Expected [" + paramIdx + "] but only found [" + keys.length + "].");
+            log.debug("param index [" + paramIdx + "]: " + keys[paramIdx] + " - " + parameterMap.get(keys[paramIdx])[0]);
+            // todo : currently getting 0 value, however, in the future look for [i] given pipe extension in the configuration
+            if (option.startsWith("l") || option.startsWith("L"))
+                ps.setLong(paramIdx + 1, Convert.toLng(parameterMap.get(keys[paramIdx])[0]));
+            else if (option.startsWith("i") || option.startsWith("I"))
+                ps.setInt(paramIdx + 1, Convert.toInt(parameterMap.get(keys[paramIdx])[0]));
+            else if (option.startsWith("f") || option.startsWith("F"))
+                ps.setFloat(paramIdx + 1, Convert.toFlt(parameterMap.get(keys[paramIdx])[0]));
+            else if (option.startsWith("d") || option.startsWith("D"))
+                ps.setDouble(paramIdx + 1, Convert.toDbl(parameterMap.get(keys[paramIdx])[0]));
+            else if (option.startsWith("t") || option.startsWith("T")) {
+                Date date = Convert.toDate(parameterMap.get(keys[paramIdx])[0]);
+                if (date == null)
+                    ps.setTimestamp(paramIdx + 1, null);
+                else
+                    ps.setTimestamp(paramIdx + 1, new Timestamp(date.getTime()));
+            }
+            else
+                ps.setString(paramIdx + 1, parameterMap.get(keys[paramIdx])[0]);
+            paramIdx++;
+        }
+
+    }
+
+    private boolean isCallableStatement(String sql) {
+        // if we match a pattern then we are a callable statement
+        String regex = "\\s*\\{.*call.*\\}";
+        return sql.matches(regex);
+    }
+
     public String execute(Map <String, String[]> parameterMap, String responseType, String action) throws SQLException, NamingException, IOException {
         String originalSql;
         if (action == null)
@@ -116,67 +334,74 @@ public class Configuration
         String cache = "";
         java.sql.Connection con = null;
         PreparedStatement ps = null;
+        // NEW: we need to evaluate the sql string to intelligently determine if we use a prepared statement or a callable one.
+        CallableStatement cs = null;
         try
         {
+            // determine if we have a callable statement or a prepared one
+            boolean isCallable = isCallableStatement(originalSql);
             log.debug("getting connection for configuration...");
             con = ConnectionHandler.getConnection(this.connectionName);
             // strip out pre-processing directives before preparing the statement
             String sql = stripOptions(originalSql);
-            log.debug("getting prepared statement for : " + sql);
-            ps = con.prepareStatement(sql);
-
             // if we have question marks in the sql then lets set parameters one at a time for each ?
             // while we are at it re-parse the original sql to look for options
             List<String> options = getOptions(originalSql);
-            int paramIdx = 0;
-            // if we have parameters lets replace them in the order the parameter was received
-            // NOTE: if a parameter is sent 2x then we only pick the first
-            //      ex: a=1,b=2,a=3,c=3 : ?1=[a->1] ?2=[b->2] ?3=[c->3] ?4=error
-            // get our string keys in order array
-            Set<String> keyset = parameterMap.keySet();
-            String[] keys = keyset.toArray(new String[keyset.size()]);
-            for (String option : options) {
-                // setting each ? parameter in the prepared statement according to the parameter passed to us by position
-                if (keys.length < paramIdx)
-                    throw new SQLException("Exception setting passed parameters to sql statement.  Expected [" + paramIdx + "] but only found [" + keys.length + "].");
-                log.debug("param index [" + paramIdx + "]: " + keys[paramIdx] + " - " + parameterMap.get(keys[paramIdx])[0]);
-                // todo : currently getting 0 value, however, in the future look for [i] given pipe extension in the configuration
-                if (option.startsWith("l") || option.startsWith("L"))
-                    ps.setLong(paramIdx + 1, Convert.toLng(parameterMap.get(keys[paramIdx])[0]));
-                else if (option.startsWith("i") || option.startsWith("I"))
-                    ps.setInt(paramIdx + 1, Convert.toInt(parameterMap.get(keys[paramIdx])[0]));
-                else if (option.startsWith("f") || option.startsWith("F"))
-                    ps.setFloat(paramIdx + 1, Convert.toFlt(parameterMap.get(keys[paramIdx])[0]));
-                else if (option.startsWith("d") || option.startsWith("D"))
-                    ps.setDouble(paramIdx + 1, Convert.toDbl(parameterMap.get(keys[paramIdx])[0]));
-                else if (option.startsWith("t") || option.startsWith("T")) {
-                    Date date = Convert.toDate(parameterMap.get(keys[paramIdx])[0]);
-                    if (date == null)
-                        ps.setTimestamp(paramIdx + 1, null);
-                    else
-                        ps.setTimestamp(paramIdx + 1, new Timestamp(date.getTime()));
-                }
-                else
-                    ps.setString(paramIdx + 1, parameterMap.get(keys[paramIdx])[0]);
-                paramIdx++;
-            }
-
-            if (action.equalsIgnoreCase("query")) {
-                log.debug("executing query...");
-                // NOTE: move setting of caching to the toX() method based on the responseType
-                cache = toResponse(responseType, ps.executeQuery());
-            }
-            else {
+            if (isCallable) {
+                log.debug("getting prepared statement for : " + sql);
+                cs = con.prepareCall(sql);
+                // callable statements need to set parameters as in, out or inout; also we skip setting out parameters
+                // NOTE: this will be done in setParameters if we get a CallableStatement typeof as parameter
+                setParameters(cs, parameterMap, options);
                 log.debug("executing update...");
-                updatedRecs = ps.executeUpdate();
-                cache = toResponse(responseType, updatedRecs);
+                boolean isResultset = cs.execute();
+                // getOutParameters will register each parameter name passed and the value of the return within one javascript object
+                String json = getOutParameterResults(cs, parameterMap, options);
+                // results should contain all of our JSON string; NOTE: could be {}.
+                //int idx = 0;
+                int resultsetIdx = 0;
+                StringBuilder buffer = new StringBuilder(200);
+                int pos = json.lastIndexOf("}");
+                if (pos != -1)
+                    buffer.append(json.substring(0, pos));
+                else
+                    buffer.append("{").append(json);
+
+                while (isResultset) {
+                    // append results will copy all but the close tag and then add on a key of rs+index and the json of the resultset
+                    if (buffer.length() > 2)
+                        buffer.append(", ");
+                    // for debugging move to an append after we see everything working
+                    String jsonrs = toJSON(cs.getResultSet());
+                    buffer.append("\"rs").append(resultsetIdx++).append("\":").append(jsonrs);
+                    isResultset = cs.getMoreResults();
+                }
+                buffer.append("}");
+                cache = buffer.toString();
+            } else {
+                log.debug("getting prepared statement for : " + sql);
+                ps = con.prepareStatement(sql);
+                setParameters(ps, parameterMap, options);
+                if (action.equalsIgnoreCase("query")) {
+                    log.debug("executing query...");
+                    cache = toResponse(responseType, ps.executeQuery());
+                }
+                else {
+                    log.debug("executing update...");
+                    updatedRecs = ps.executeUpdate();
+                    cache = toResponse(responseType, updatedRecs);
+                }
             }
         }
         finally
         {
+            if (cs != null) {
+                try {cs.close();}
+                catch (SQLException stmtex) {log.warn("exception attempting to close non-null callable statement: " + stmtex);}
+            }
             if (ps != null) {
                 try {ps.close();}
-                catch (SQLException stmtex) {log.warn("exception attempting to close non-null statement: " + stmtex);}
+                catch (SQLException stmtex) {log.warn("exception attempting to close non-null prepared statement: " + stmtex);}
             }
             if (con != null) {
                 try {con.close();}
@@ -205,7 +430,7 @@ public class Configuration
 
     public String toString()
     {
-        StringBuilder buffer = new StringBuilder();
+        StringBuilder buffer = new StringBuilder(200);
         buffer.append("connectionName=").append(connectionName).append(", ");
         buffer.append("path=").append(path).append(", ");
         buffer.append("query=").append(queryStatement).append(", ");
@@ -243,16 +468,16 @@ public class Configuration
         return buffer.toString();
     }
     // note: adding id parameter again at the end for update statements (we are simulating a form submit)
-    public String toQueryString() {
+    public String toQueryString() throws java.io.UnsupportedEncodingException{
         StringBuilder sb = new StringBuilder(400);
-        sb.append("connectionName=").append(this.connectionName == null ? "" : this.connectionName)
+        sb.append("connectionName=").append(this.connectionName == null ? "" : URLEncoder.encode(this.connectionName, "UTF-8"))
                 .append("&path=").append(this.path)
-                .append("&querySql=").append(this.queryStatement == null ? "" : this.queryStatement)
-                .append("&insertSql=").append(this.insertStatement == null ? "" : this.insertStatement)
-                .append("&updateSql=").append(this.updateStatement == null ? "" : this.updateStatement)
-                .append("&deleteSql=").append(this.deleteStatement == null ? "" : this.deleteStatement)
-                .append("&keywords=").append(this.keywords == null ? "" : this.keywords)
-                .append("&id=").append(this.path);
+                .append("&querySql=").append(this.queryStatement == null ? "" : URLEncoder.encode(this.queryStatement, "UTF-8"))
+                .append("&insertSql=").append(this.insertStatement == null ? "" : URLEncoder.encode(this.insertStatement, "UTF-8"))
+                .append("&updateSql=").append(this.updateStatement == null ? "" : URLEncoder.encode(this.updateStatement, "UTF-8"))
+                .append("&deleteSql=").append(this.deleteStatement == null ? "" : URLEncoder.encode(this.deleteStatement, "UTF-8"))
+                .append("&keywords=").append(this.keywords == null ? "" : URLEncoder.encode(this.keywords, "UTF-8"))
+                .append("&id=").append(URLEncoder.encode(this.path, "UTF-8"));
         return sb.toString();
     }
 
@@ -293,6 +518,7 @@ public class Configuration
 //                buffer.append("\"").append(metaData.getColumnLabel(i)).append("\":\"").append(rs.getString(i)).append("\"");
                 // JSON deals with nulls... don't wrap in strings (also for integers and such not either once syntax is complete add here
                 buffer.append("\"").append(metaData.getColumnLabel(i).toLowerCase()).append("\":");
+                log.debug(metaData.getColumnLabel(i).toLowerCase() + " : " + rs.getString(i));
                 if (rs.getString(i) == null)
                     buffer.append(rs.getString(i));
                 else

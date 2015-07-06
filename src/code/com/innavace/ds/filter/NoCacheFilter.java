@@ -28,7 +28,7 @@ public class NoCacheFilter implements Filter {
                 httpresponse.setHeader("Expires", "0") ;
                 // Print out the URL we're filtering
                 String name = ((HttpServletRequest)request).getRequestURI();
-                System.out.println("No Cache Filtering: " + name) ;
+                //System.out.println("No Cache Filtering: " + name) ;
             }
             chain.doFilter (request, response);
         } catch (IOException e) {

@@ -255,11 +255,11 @@ public class Connection {
 
     public String toJSON() {
         StringBuilder buffer = new StringBuilder(200);
-        buffer.append("{\"name\":\"").append(this.name).append("\", \"type\":\"").append(this.type).append("\", \"jndi_context\":\"");
-        buffer.append(this.jndiContext).append("\", \"jndi_name\":\"").append(this.jndiDatasource).append("\", \"jdbc_driver\":\"");
-        buffer.append(this.jdbcDriver).append("\", \"jdbc_url\":\"").append(this.jdbcUrl).append("\", \"jdbc_username\":\"");
-        buffer.append(this.jdbcUserName).append("\", \"jdbc_password\":\"").append(this.jdbcPassword).append("\", \"description\":\"");
-        buffer.append(this.description).append("\", \"internal\":\"");
+        buffer.append("{\"name\":\"").append(this.name).append("\", \"type\":\"").append(this.type);
+        buffer.append("\", \"jdbc_driver\":\"").append(this.jdbcDriver).append("\", \"jdbc_url\":\"").append(this.jdbcUrl);
+        buffer.append("\", \"jdbc_username\":\"").append(this.jdbcUserName).append("\", \"jdbc_password\":\"").append(this.jdbcPassword);
+        buffer.append("\", \"jndi_context\":\"").append(this.jndiContext).append("\", \"jndi_name\":\"").append(this.jndiDatasource);
+        buffer.append("\", \"description\":\"").append(this.description).append("\", \"internal\":\"");
         if (this.type.equalsIgnoreCase("jdbc") && this.jdbcDriver.equalsIgnoreCase(""))
             buffer.append("true");
         else

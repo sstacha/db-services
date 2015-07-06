@@ -106,7 +106,11 @@ public class DataProvider extends HttpServlet
                 response.sendError(403, "[" + dsPath + "] requires system privileges; try adding /_system/ prefix instead.");
             else {
             // attempt to execute the configuration requested action
-                try {response.getOutputStream().println(configuration.execute(request, _action));}
+                try {
+                    response.setContentType("application/json");
+                    String sresult = configuration.execute(request, _action);
+                    response.getOutputStream().write(sresult.getBytes("UTF-8"));
+                }
                 catch (Throwable ex)
                 {
                     ex.printStackTrace();

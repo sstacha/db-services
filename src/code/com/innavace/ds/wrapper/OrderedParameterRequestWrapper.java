@@ -62,9 +62,9 @@ public class OrderedParameterRequestWrapper extends HttpServletRequestWrapper {
             // next parse the strings and put into parameter map in order
             String body = toString();
             String qs = request.getQueryString();
-//            log.debug("qs: " + qs);
-//            log.debug("parameter body value: " + body);
-//            log.debug("content type header: " + request.getHeader("content-type"));
+            log.debug("qs: " + qs);
+            log.debug("parameter body value: " + body);
+            log.debug("content type header: " + request.getHeader("content-type"));
             OrderedParameterWrapper parameterWrapper = new OrderedParameterWrapper(request.getHeader("content-type"), qs, body);
             parameterMap = parameterWrapper.getParameterMap();
         }

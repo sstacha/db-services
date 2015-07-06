@@ -138,7 +138,7 @@ public class ConfigurationHandler
                 "VALUES (?, ?, ?, ?, ?, ?, ?)', " +
             "'UPDATE CONFIGURATIONS SET CONNECTION_NAME=?, PATH=?, QUERY_STATEMENT=?, " +
                 "INSERT_STATEMENT=?, UPDATE_STATEMENT=?, DELETE_STATEMENT=?, KEYWORDS=? WHERE PATH=?', " +
-            "'DELETE FROM CONFIGURATIONS WHERE PATH=?', 'system, product:console')";
+            "'DELETE FROM CONFIGURATIONS WHERE PATH=?', '_system, product:console')";
         log.debug(sql);
         try {stmt.execute(sql);log.info("SYSTEM [CONFIGURATIONS] DEFAULT DATA CREATED");}
         catch (SQLException sqlex) {log.fatal("Exception attempting to create default configurations data: ", sqlex);}
@@ -150,7 +150,7 @@ public class ConfigurationHandler
             "'UPDATE CONNECTIONS SET NAME=?, TYPE=?, " +
                 "JDBC_DRIVER=?, JDBC_URL=?, JDBC_USERNAME=?, JDBC_PASSWORD=?, " +
                 "JNDI_NAME=?, JNDI_CONTEXT=?, DESCRIPTION=? WHERE NAME=?', " +
-            "'DELETE FROM CONNECTIONS WHERE NAME=?', 'system, product:console')";
+            "'DELETE FROM CONNECTIONS WHERE NAME=?', '_system, product:console')";
         log.info(sql);
         try {stmt.execute(sql);log.info("SYSTEM [CONNECTIONS] DEFAULT DATA CREATED");}
         catch (SQLException sqlex) {log.fatal("Exception attempting to create default configurations data for connections: ", sqlex);}
@@ -288,7 +288,99 @@ public class ConfigurationHandler
         buffer.append("</configurations>");
         return buffer.toString();
     }
+    public static synchronized String toXML(String filter, String tagFilter) {
+        StringBuilder buffer = new StringBuilder(400);
+        Collection<Configuration> configurations = configurationsMap.values();
+        buffer.append("<configurations>");
+        for (Configuration configuration : configurations) {
+            if (filterPath(configuration, filter) && filterTags(configuration, tagFilter)) {
+                buffer.append(configuration.toXML());
+            }
+        }
+        buffer.append("</configurations>");
+        return buffer.toString();
+    }
+    // path filter is pretty simple.  for an element return true if the path matches; false otherwise
+    private static synchronized boolean filterPath(Configuration configuration, String pathFilter) {
+        return pathFilter == null || pathFilter.length() == 0 || configuration.path.startsWith(pathFilter);
+    }
+    // tag filter is a bit more complicated; start from left to right and determine if the element is shown
+    //      based on keywords/tags on the element and the filter sent in.
+    private static synchronized boolean filterTags(Configuration configuration, String tagFilter) {
+		// by precedence if we have a ! it goes first; ie: web product:web !crm !pie
+		//		translates to web and product:web and not crm and not pie
+		// strip each word block by spaces
+		// NOTE: if we have an empty filter we simply want to always include everything
+        if (tagFilter == null)
+            tagFilter = "";
+        else
+            tagFilter = tagFilter.trim();
+        if (tagFilter.length() == 0)
+            return true;
 
+        String[] parts = tagFilter.split("\\s+");
+        String[] tags = new String[0];
+        if (configuration.keywords != null && configuration.keywords.length() > 0)
+            tags = configuration.keywords.replaceAll("\\s+","").split(",");
+        boolean lvalue = false;
+        boolean rvalue = false;
+        boolean rvalueSet = false;
+        int i = 0;
+        String op = "";
+        for (String part : parts) {
+            if (i==0) {
+                lvalue = evaluateCondition(part, tags);
+                i=1;
+            }
+            else if (i==2) {
+                //optional op or value2
+                if (part.equals("&&") || part.equals("||"))
+                    op = part;
+                else {
+                    rvalue = evaluateCondition(part, tags);
+                    rvalueSet = true;
+                    op="&&";
+                    i=3;
+                }
+            }
+            if (i==3) {
+                if (!rvalueSet)
+                    rvalue = evaluateCondition(part, tags);
+                if (op.equals("&&"))
+                    lvalue = lvalue && rvalue;
+                else
+                    lvalue = lvalue || rvalue;
+            }
+            if (++i > 3) {
+                i = 2;
+                rvalueSet = false;
+            }
+        }
+        return lvalue;
+    }
+    private static synchronized boolean evaluateCondition(String part, String[] tags) {
+        String realValue = part;
+      		if (part.indexOf('!') == 0)
+      			realValue = realValue.substring(1);
+      		boolean found;
+
+            found = inArray(realValue, tags);
+      		if (part.indexOf('!') == 0)
+      			return !found;
+      		else
+      			return found;
+
+    }
+    private static synchronized boolean inArray(String value, String[] arr) {
+        boolean contains = false;
+        for (String item : arr) {
+            if (value.equalsIgnoreCase(item)) {
+                contains=true;
+                break;
+            }
+        }
+        return contains;
+    }
     public static void main(String[] args)
     {
         BasicConfigurator.configure();

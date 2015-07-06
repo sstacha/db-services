@@ -148,6 +148,9 @@
         <copy todir="${dir.dist}/ds">
             <fileset dir="${dir.build.webapp}"  excludes=".DS_Store"/>
         </copy>
+        <!-- move the binary completed app to the bin directory for checkin -->
+        <!-- NOTE: we assume that directory is already created and there -->
+        <copy file="${dir.dist}/ds.war" todir="../bin/"/>
     </target>
 
 </project>

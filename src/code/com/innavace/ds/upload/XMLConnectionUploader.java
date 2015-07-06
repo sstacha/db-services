@@ -67,7 +67,7 @@ public class XMLConnectionUploader extends DefaultHandler {
         else if (elementName.equalsIgnoreCase("connection")) {
             // using the current systems configurations save the data
             // for now just print it out
-//            System.out.println("&&&&&&& importing: " + connection.toString());
+            System.out.println("&&&&&&& importing: " + connection.toString());
             boolean updated = false;
             try {updated = ConnectionHandler.updateConnection(connection);}
             catch (Exception ex) {System.out.println("got exception attempting to upload connection [" + connection.name + "]: " + ex);}
@@ -86,4 +86,5 @@ public class XMLConnectionUploader extends DefaultHandler {
     public String getStatus() {
         return "imported [" + imported + "] records.\nskipped[" + skipped + "] records.";
     }
+
 }

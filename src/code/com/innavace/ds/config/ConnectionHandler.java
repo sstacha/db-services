@@ -192,7 +192,7 @@ public class ConnectionHandler
         Configuration connectionConfiguration = ConfigurationHandler.getConfiguration("/connections");
         if (connectionConfiguration == null)
             throw new SQLException("/connections configuration not found!");
-        OrderedParameterWrapper parameterWrapper = new OrderedParameterWrapper(null, connection.toQueryString(), null);
+        OrderedParameterWrapper parameterWrapper = new OrderedParameterWrapper("application/json", null, connection.toJSON());
         connectionConfiguration.execute(parameterWrapper.getParameterMap(), "text/json", ConnectionHandler.hasConnection(connection.name) ? "update" : "insert");
         return true;
     }
@@ -229,7 +229,6 @@ public class ConnectionHandler
             return "{}";
         return connection.toJSON();
     }
-
     public static synchronized String toXML() {
         StringBuilder buffer = new StringBuilder(400);
         Collection<Connection> connections = connectionsMap.values();
@@ -239,7 +238,20 @@ public class ConnectionHandler
         buffer.append("</connections>");
         return buffer.toString();
     }
-
+    public static synchronized String toXML(String nameFilter) {
+        StringBuilder buffer = new StringBuilder(400);
+        Collection<Connection> connections = connectionsMap.values();
+        buffer.append("<connections>");
+        for (Connection connection : connections)
+            if (filterName(connection, nameFilter))
+                buffer.append(connection.toXML());
+        buffer.append("</connections>");
+        return buffer.toString();
+    }
+    // name filter is pretty simple.  for an element return true if the path matches; false otherwise
+    private static synchronized boolean filterName(Connection connection, String nameFilter) {
+        return nameFilter == null || nameFilter.length() == 0 || connection.name.startsWith(nameFilter);
+    }
     public static synchronized void createSchema(Statement stmt) throws SQLException {
 
         String sql = "CREATE TABLE CONNECTIONS (NAME VARCHAR(50) PRIMARY KEY, TYPE VARCHAR(4) NOT NULL DEFAULT 'jdbc', JNDI_NAME VARCHAR(50), JNDI_CONTEXT VARCHAR(50), JDBC_DRIVER VARCHAR(150), JDBC_URL VARCHAR(255), JDBC_USERNAME VARCHAR(50), JDBC_PASSWORD VARCHAR(50), DESCRIPTION VARCHAR(255) NOT NULL)";
