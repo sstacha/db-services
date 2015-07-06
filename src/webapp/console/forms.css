@@ -1,0 +1,43 @@
+/* form styles (makes the form look uniformed)  */
+input.inputText, textarea, select {width:45%; vertical-align:baseline;}
+textarea {height:150px; font-family:Arial,Helvetica,sans-serif; font-size:small;}
+input.inputCheckbox, input.inputRadio {display: inline;}
+input.chkOpportunity {width:auto;}
+input.button {margin: 0;}
+
+legend {display:none;}
+form {margin:0; padding:0; width:100%;}
+form fieldset {border-style:none;}
+form fieldset div.notes {
+    float: right;
+    width: 158px;
+    height: auto;
+    margin: 0 0 10px 10px;
+    padding: 5px;
+    border: 1px solid #666666;
+    background-color: #ffffe1;
+    color: #666666;
+    font-size: 88%;
+}
+form fieldset div.notes h4 {
+    background-image: url(../images/info24.png);
+    background-repeat: no-repeat;
+    background-position: top left;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    padding: 6px 0 10px 28px;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: #666666;
+    color: #666666;
+    font-size: 110%;
+}
+form fieldset div.notes a { text-decoration:underline;}
+
+form label, form div span.label {display:inline-block; vertical-align:baseline; text-align:right; width:180px}
+label.labelCheckbox, label.labelRadio {margin-left:180px; margin-bottom:5px; text-align:left; width: 45%; padding:4px 0 0 18px; text-indent:-18px}
+label.textArea {vertical-align: top; padding-top:5px;}
+div.required {color:#8a161a;}
+.hidden {display: none;}
+#submit {margin: 2px;}
+.maroon {color:#8a161a;}

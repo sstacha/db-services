@@ -1,0 +1,100 @@
+<div id="tables" class="panel transparent">
+    <div class="toolbar transparent">
+        <button class="btn btn-default " data-ng-click="addTable()">Add Table</button>
+    </div>
+    <div id="table_list" data-ng-repeat="table in tables" data-ng-show="nameFilter(table)">
+        <div class="panel panel-default" style="margin-bottom: 5px;">
+            <div class="panel-body clickable" data-ng-click="editTable(table)">
+            	<div class="row">
+            		<div class="col-md-12 required id">
+            			{{table.name}}
+            		</div>
+            	</div> 
+            	<div class="row" data-ng-repeat="header in tableHeaders">
+            		<div class="col-md-12">
+						{{header}}
+					</div>
+				</div>	
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- table dialog -->
+<div id="table-dialog" class="modal popup" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Table | {{selectedTable.name}}</h4>
+            </div>
+            <form role="form" id="connection-form" method="POST">
+            <div class="modal-body">
+                <fieldset>
+                    <div class="form-group">
+                        <label for="table_name">Name</label>
+                        <input class="form-control" type="text" id="table_name" name="name" data-ng-model="selectedTable.name"/>
+                    </div>
+                    <input type="text" id="table_id" name="id" data-ng-model="dbTable.name"/>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal">Cancel</button>
+                <button class="btn" id="btn-test-configuration" data-ng-disabled="cantShowResults()" data-ng-click="showTableResults()" onclick="return false;">Data</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-ng-click="saveTable()">Save</button>
+             </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- table results dialog -->
+<div id="table-results-dialog" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Table Results | {{selectedTable.name}}</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table" data-toggle="table" data-card-view="true">
+                	<thead>
+                        <tr>
+                            <th data-ng-repeat="header in tableHeaders" >{{header}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="table-configuration-results" data-ng-repeat="result in tableResults">
+                            <td data-ng-repeat="header in tableHeaders">{{result[header]}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" id="btn-test-results" data-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- delete table dialog -->
+<div id="delete-table-confirm" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Delete Table? | {{selectedTable.name}}</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+                    This table will be permanently deleted and cannot be recovered. Are you sure?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" data-ng-click="deleteTable()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>

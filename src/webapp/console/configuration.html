@@ -1,0 +1,200 @@
+<div id="configurations" class="panel transparent">
+    <div class="toolbar transparent">
+        <button class="btn btn-default " data-ng-click="addConfiguration()">Add Configuration</button> | 
+        <a data-toggle="modal" href="#tag-filter-dlg" class="btn btn-default">Tag Filter</a>
+    </div>
+    <div id="configuration_list" data-ng-repeat="configuration in configurations" data-ng-show="(pathFilter(configuration) && keywordFilter(configuration))">
+        <div class="panel panel-default" style="margin-bottom: 5px;">
+            <div class="panel-body clickable" data-ng-click="editConfiguration(configuration)">
+            	<div class="row">
+            		<div class="col-md-6 required id">
+            			{{configuration.path}}
+            		</div>
+            		<div class="col-md-6 text-right">
+            			{{configuration.connection_name}}
+            		</div>
+            	</div>            	
+            	<div class="row">
+            		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="configuration.query_statement">
+						query:
+					</div>
+					<div class="col-md-11 field required" data-ng-show="configuration.query_statement">
+						{{configuration.query_statement}}
+					</div>
+				</div>	
+            	<div class="row">
+            		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="configuration.insert_statement">
+						insert:
+					</div>
+					<div class="col-md-11 field required" data-ng-show="configuration.insert_statement">
+						{{configuration.insert_statement}}
+					</div>
+				</div>	
+            	<div class="row">
+            		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="configuration.update_statement">
+						update:
+					</div>
+					<div class="col-md-11 field required" data-ng-show="configuration.update_statement">
+						{{configuration.update_statement}}
+					</div>
+				</div>	
+            	<div class="row">
+            		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="configuration.delete_statement">
+						delete:
+					</div>
+					<div class="col-md-11 field required" data-ng-show="configuration.delete_statement">
+						{{configuration.delete_statement}}
+					</div>
+				</div>	
+            	<div class="row">
+            		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="configuration.keywords">
+						tags:
+					</div>
+					<div class="col-md-11 field required" data-ng-show="configuration.keywords">
+						{{configuration.keywords}}
+					</div>
+				</div>	
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="configuration-dialog" class="modal popup fade" role="dialog" aria-labelledby="configuration-dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="configuration-dialog-label">Configuration | {{selectedConfiguration.path}}</h4>
+            </div>
+            <form role="form" id="configuration-form" method="POST">
+            <div class="modal-body">
+                <fieldset>
+                    <div class="form-group">
+                        <label for="configuration-connection">Connection</label>
+                        <select id=configuration-connection name="connection" data-ng-model="selectedConfiguration.connection_name">
+                            <option ng-repeat="con in connections" value="{{con.name}}">{{con.name}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="configuration-path">Path<span class="help-text">(deploys to {{ctx}}/[your path])</span></label>
+                        <input class="form-control" type="text" id="configuration-path" name="path" data-ng-model="selectedConfiguration.path"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="configuration-querysql">Query SQL</label>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-querysql" name="querysql" data-ng-model="selectedConfiguration.query_statement"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="configuration-insertsql">Insert SQL</label>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-insertsql" name="insertsql" data-ng-model="selectedConfiguration.insert_statement"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="configuration-updatesql">Update SQL</label>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-updatesql" name="updatesql" data-ng-model="selectedConfiguration.update_statement"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="configuration-deletesql">Delete SQL</label>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-deletesql" name="deletesql" data-ng-model="selectedConfiguration.delete_statement"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="configuration-keywords">Keywords<span class="help-text">(comma separated list)</span></label>
+                        <input class="form-control" type="text" id="configuration-keywords" name="keywords" data-ng-model="selectedConfiguration.keywords"/>
+                    </div>
+                    <input type="text" id="configuration-id" name="id" data-ng-model="dbConfiguration.path" style="display:none;"/>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger" data-ng-disabled="cantModifyConfiguration()" data-toggle="modal" data-target="#delete-configuration-confirm">Delete</button>
+                <button class="btn" id="btn-test-configuration" data-ng-disabled="cantModifyConfiguration()" data-ng-click="showTestConfiguration()" onclick="return false;">Test</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-ng-disabled="cantSaveConfiguration()" data-ng-click="saveConfiguration()">Save</button>
+             </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="test-configuration-dialog" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="test-configuration-dialog-label">Test Configuration | {{selectedConfiguration.path}}</h4>
+            </div>
+            <form role="form" id="test-configuration-form" method="post">
+            <div class="modal-body">
+                <fieldset>
+                    <!-- insert dynamic form fields here -->
+                    <div id="test-configuration-parameters" data-ng-repeat="param in testParams">
+                        <label for="{{param.name}}">{{param.name}}</label>
+                        <input id="{{param.name}}" name="{{param.name}}" data-ng-model="param.value" />
+                    </div>
+                    <label for="test-configuration-action">Action</label>
+                    <select id="test-configuration-action" name="$action" data-ng-options="act for act in usedActions track by act" data-ng-change="buildTestConfigurationParameters()" data-ng-model="testAction">
+                        <option>--</option>
+                    </select>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" id="btn-test" data-ng-disabled="hasInvalidParameters()" data-ng-click="testConfiguration()" onclick="return false;">Test Configuration</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="test-configuration-results-dialog" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="test-configuration-dialog-results-label">Test Configuration Results | {{selectedConfiguration.path}}</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                	<thead>
+                        <tr>
+                            <th data-ng-repeat="header in testHeaders" >{{header}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="test-configuration-results" data-ng-repeat="result in testResults">
+                            <td data-ng-repeat="header in testHeaders">{{result[header]}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                	<div data-ng-show="hasResultsMsg()">
+                	<pre id=results_msg>	
+                		
+                	</pre>	
+                	</div>
+                <br>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" id="btn-test-results" data-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="delete-configuration-confirm" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="delete-configuration-dialog-label">Delete Configuration? | {{selectedConfiguration.path}}</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+                    This configuration will be permanently deleted and cannot be recovered. Are you sure?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" data-ng-click="deleteConfiguration()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+<div id="add-table-confirm" title="Add Table?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="add-table-msg">Detected table does not exist. Would you like to create it?</span></p>
+</div>
+
+<div id="add-table-dialog" title="Build Table">
+    <button id="add-table-field_button" onclick="addTableField('','','');">Add Field</button>
+    <label for="at-table-name">Table Name</label> <input id="at-table-name" style="width: 135px;" class="text ui-widget-content ui-corner-all" />
+<table style="margin-left: 7px;">
+<thead><tr><th>Name</th><th>Type [(size)]</th></tr></thead>
+<tbody id="add-table-fields">
+<%--<tr><td><input style="width: 115px;"/></td><td><input style="width: 115px;"/></td><td><input style="width: 60px;"/></td></tr>--%>
+</tbody>
+</table>
+    <form id="add-table-form" method="POST" action="<%=request.getContextPath()%>/_system/sql/execute">
+    <fieldset>
+        <label for="at-con">Connection</label>
+        <select id=at-con name="$con">
+            <option value="default">default</option>
+        </select>
+        <label for="at-sql">SQL</label>
+        <textarea rows="3" cols="49" id="at-sql" name="$sql" class="text ui-widget-content ui-corner-all" style="width: 98%;"></textarea>
+    </fieldset>
+    </form>
+</div>
