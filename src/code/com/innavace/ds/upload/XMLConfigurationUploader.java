@@ -17,6 +17,7 @@ package com.innavace.ds.upload;
 
 import com.innavace.ds.config.Configuration;
 import com.innavace.ds.config.ConfigurationHandler;
+import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -32,6 +33,7 @@ import javax.xml.parsers.SAXParserFactory;
  */
 public class XMLConfigurationUploader extends DefaultHandler {
 
+    public static Logger log = Logger.getLogger(XMLConfigurationUploader.class);
 //    HttpServletRequest request;
     Configuration configuration;
     StringBuilder characters = new StringBuilder(200);
@@ -69,7 +71,7 @@ public class XMLConfigurationUploader extends DefaultHandler {
         else if (elementName.equalsIgnoreCase("configuration")) {
             // using the current systems configurations save the data
             // for now just print it out
-//            System.out.println("&&&&&&&    importing: " + configuration.toString());
+            log.info("    importing configuration: " + configuration.toString());
             boolean updated = false;
             try {updated = ConfigurationHandler.updateConfiguration(configuration);}
             catch (Exception ex) {System.out.println("got exception attempting to upload configuration [" + configuration.path + "]: " + ex);}

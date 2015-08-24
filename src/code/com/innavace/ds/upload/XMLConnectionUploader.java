@@ -21,13 +21,15 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import org.apache.log4j.Logger;
+
 /**
  * User: sstacha
  * Date: Mar 5, 2013
  * handles parsing and uploading the connections provided in an xml file
  */
 public class XMLConnectionUploader extends DefaultHandler {
-
+    public static Logger log = Logger.getLogger(XMLConnectionUploader.class);
 //    HttpServletRequest request;
     Connection connection;
     StringBuilder characters = new StringBuilder(200);
@@ -67,7 +69,7 @@ public class XMLConnectionUploader extends DefaultHandler {
         else if (elementName.equalsIgnoreCase("connection")) {
             // using the current systems configurations save the data
             // for now just print it out
-            System.out.println("&&&&&&& importing: " + connection.toString());
+            log.info("    importing connection: " + connection.toString());
             boolean updated = false;
             try {updated = ConnectionHandler.updateConnection(connection);}
             catch (Exception ex) {System.out.println("got exception attempting to upload connection [" + connection.name + "]: " + ex);}

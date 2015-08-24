@@ -241,6 +241,7 @@ public class ConnectionHandler
     public static synchronized String toXML(String nameFilter) {
         StringBuilder buffer = new StringBuilder(400);
         Collection<Connection> connections = connectionsMap.values();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         buffer.append("<connections>");
         for (Connection connection : connections)
             if (filterName(connection, nameFilter))

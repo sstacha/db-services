@@ -239,15 +239,15 @@ public class Connection {
     public String toXML() {
         StringBuilder buffer = new StringBuilder(200);
         buffer.append("<connection>");
-        buffer.append("<name>").append(this.name == null ? "" : this.name).append("</name>");
+        buffer.append("<name><![CDATA[").append(this.name == null ? "" : this.name).append("]]></name>");
         buffer.append("<type>").append(this.type == null ? "" : this.type).append("</type>");
         buffer.append("<jndiContext>").append(this.jndiContext == null ? "" : this.jndiContext).append("</jndiContext>");
         buffer.append("<jndiDatasource>").append(this.jndiDatasource == null ? "" : this.jndiDatasource).append("</jndiDatasource>");
-        buffer.append("<jdbcDriver>").append(this.jdbcDriver == null ? "" : this.jdbcDriver).append("</jdbcDriver>");
-        buffer.append("<jdbcUrl>").append(this.jdbcUrl == null ? "" : this.jdbcUrl).append("</jdbcUrl>");
-        buffer.append("<jdbcUserName>").append(this.jdbcUserName == null ? "" : this.jdbcUserName).append("</jdbcUserName>");
-        buffer.append("<jdbcPassword>").append(this.jdbcPassword == null ? "" : this.jdbcPassword).append("</jdbcPassword>");
-        buffer.append("<description>").append(this.description == null ? "" : this.description).append("</description>");
+        buffer.append("<jdbcDriver><![CDATA[").append(this.jdbcDriver == null ? "" : this.jdbcDriver).append("]]></jdbcDriver>");
+        buffer.append("<jdbcUrl><![CDATA[").append(this.jdbcUrl == null ? "" : this.jdbcUrl).append("]]></jdbcUrl>");
+        buffer.append("<jdbcUserName><![CDATA[").append(this.jdbcUserName == null ? "" : this.jdbcUserName).append("]]></jdbcUserName>");
+        buffer.append("<jdbcPassword><![CDATA[").append(this.jdbcPassword == null ? "" : this.jdbcPassword).append("]]></jdbcPassword>");
+        buffer.append("<description><![CDATA[").append(this.description == null ? "" : this.description).append("]]></description>");
         buffer.append("</connection>");
         log.debug("toXML string: " + buffer.toString());
         return  buffer.toString();

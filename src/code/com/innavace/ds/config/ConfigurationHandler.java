@@ -291,6 +291,7 @@ public class ConfigurationHandler
     public static synchronized String toXML(String filter, String tagFilter) {
         StringBuilder buffer = new StringBuilder(400);
         Collection<Configuration> configurations = configurationsMap.values();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         buffer.append("<configurations>");
         for (Configuration configuration : configurations) {
             if (filterPath(configuration, filter) && filterTags(configuration, tagFilter)) {

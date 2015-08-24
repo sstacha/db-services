@@ -437,20 +437,19 @@ public class Configuration
         buffer.append("insert=").append(insertStatement).append(", ");
         buffer.append("update=").append(updateStatement).append(", ");
         buffer.append("delete=").append(deleteStatement).append(", ");
-        buffer.append("cached=").append(cached).append(", ");
         buffer.append("keywords={").append(keywords).append("} ");
         return buffer.toString();
     }
     public String toXML() {
         StringBuilder buffer = new StringBuilder(200);
         buffer.append("<configuration>");
-        buffer.append("<connectionName>").append(this.connectionName == null ? "" : this.connectionName).append("</connectionName>");
+        buffer.append("<connectionName><![CDATA[").append(this.connectionName == null ? "" : this.connectionName).append("]]></connectionName>");
         buffer.append("<path>").append(this.path == null ? "" : this.path).append("</path>");
-        buffer.append("<querySql>").append(this.queryStatement == null ? "" : this.queryStatement).append("</querySql>");
-        buffer.append("<insertSql>").append(this.insertStatement == null ? "" : this.insertStatement).append("</insertSql>");
-        buffer.append("<updateSql>").append(this.updateStatement == null ? "" : this.updateStatement).append("</updateSql>");
-        buffer.append("<deleteSql>").append(this.deleteStatement == null ? "" : this.deleteStatement).append("</deleteSql>");
-        buffer.append("<keywords>").append(this.keywords == null ? "" : this.keywords).append("</keywords>");
+        buffer.append("<querySql><![CDATA[").append(this.queryStatement == null ? "" : this.queryStatement).append("]]></querySql>");
+        buffer.append("<insertSql><![CDATA[").append(this.insertStatement == null ? "" : this.insertStatement).append("]]></insertSql>");
+        buffer.append("<updateSql><![CDATA[").append(this.updateStatement == null ? "" : this.updateStatement).append("]]></updateSql>");
+        buffer.append("<deleteSql><![CDATA[").append(this.deleteStatement == null ? "" : this.deleteStatement).append("]]></deleteSql>");
+        buffer.append("<keywords><![CDATA[").append(this.keywords == null ? "" : this.keywords).append("]]></keywords>");
         buffer.append("</configuration>");
         log.debug("toXML string: " + buffer.toString());
         return  buffer.toString();
