@@ -19,9 +19,12 @@ import com.innavace.ds.config.Configuration;
 import com.innavace.ds.config.ConfigurationHandler;
 import com.innavace.ds.config.ConnectionHandler;
 import com.innavace.ds.upload.XMLConfigurationUploader;
-import com.innavace.ds.upload.XMLConnectionUploader;
+import com.innavace.ds.upload.XMLConnectionUploader2;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
@@ -29,6 +32,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
@@ -194,12 +199,24 @@ public class SystemProvider extends HttpServlet
         }
         else if (dsPath.equalsIgnoreCase("/_system/connections/upload")) {
             try {
+//                InputSource is = new InputSource(new StringReader(xml));
+//                is.setEncoding("UTF-8");
+//                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+//                DocumentBuilder db = dbf.newDocumentBuilder();
+//                Document doc = db.parse(is);
+//                NodeList connections = doc.getElementsByTagName("connection");
+//                String name;
+//                for (int conct=0; conct < connections.getLength(); conct++) {
+//                    name = getNode("name");
+//                    System.out.println("name: " + name);
+//                }
+
                 // read in and parse the body content
                 SAXParserFactory factory = SAXParserFactory.newInstance();
-               	SAXParser saxParser = factory.newSAXParser();
-               	XMLConnectionUploader handler = new XMLConnectionUploader();
+                SAXParser saxParser = factory.newSAXParser();
+                XMLConnectionUploader2 handler = new XMLConnectionUploader2();
                 String xml = request.getParameter("file");
-//                log.debug("using string: " + xml);
+                //log.info("using string: " + xml);
                 InputSource is = new InputSource(new StringReader(xml));
                 is.setEncoding("UTF-8");
                 saxParser.parse(is, handler);

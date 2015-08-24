@@ -69,7 +69,7 @@ public class ConnectionHandler
         // as a last resort if we still don't have a default connection then attempt to build from default values and add to map (DERBY or JavaDB implementation)
         if (connectionsMap.size() == 0) {
             log.debug("No configuration parameters found; attempting to create H2 in-process file database...");
-            connection = new Connection("default", "jdbc", "", "", "org.h2.Driver", "jdbc:h2:~/dbServices/ds", "dsadmin", "dsadmin", "system default file connection");
+            connection = new Connection("default", "jdbc", "", "", "org.h2.Driver", "jdbc:h2:~/data/dbServices/ds", "dsadmin", "dsadmin", "system default file connection");
             log.debug("attempting to determine external default connection...");
             if (connection.isValid()) {
                 // first check to see if there is a reference pointer to a different database defined if inprocess database
@@ -232,6 +232,7 @@ public class ConnectionHandler
     public static synchronized String toXML() {
         StringBuilder buffer = new StringBuilder(400);
         Collection<Connection> connections = connectionsMap.values();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         buffer.append("<connections>");
         for (Connection connection : connections)
             buffer.append(connection.toXML());
@@ -255,7 +256,7 @@ public class ConnectionHandler
     }
     public static synchronized void createSchema(Statement stmt) throws SQLException {
 
-        String sql = "CREATE TABLE CONNECTIONS (NAME VARCHAR(50) PRIMARY KEY, TYPE VARCHAR(4) NOT NULL DEFAULT 'jdbc', JNDI_NAME VARCHAR(50), JNDI_CONTEXT VARCHAR(50), JDBC_DRIVER VARCHAR(150), JDBC_URL VARCHAR(255), JDBC_USERNAME VARCHAR(50), JDBC_PASSWORD VARCHAR(50), DESCRIPTION VARCHAR(255) NOT NULL)";
+        String sql = "CREATE TABLE connections (NAME VARCHAR(50) PRIMARY KEY, TYPE VARCHAR(4) NOT NULL DEFAULT 'jdbc', JNDI_NAME VARCHAR(50), JNDI_CONTEXT VARCHAR(50), JDBC_DRIVER VARCHAR(150), JDBC_URL VARCHAR(255), JDBC_USERNAME VARCHAR(50), JDBC_PASSWORD VARCHAR(50), DESCRIPTION VARCHAR(255) NOT NULL)";
         stmt.execute(sql);
         log.info("SYSTEM TABLE [CONNECTIONS] CREATED");
     }

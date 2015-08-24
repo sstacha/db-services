@@ -55,19 +55,19 @@ public class XMLConfigurationUploader extends DefaultHandler {
     @Override
     public void endElement(String s, String s2, String elementName) throws SAXException {
         if (elementName.equalsIgnoreCase("connectionName"))
-            configuration.connectionName = characters.toString();
+            configuration.connectionName = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("path"))
-            configuration.path = characters.toString();
+            configuration.path = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("querySql"))
-            configuration.queryStatement = characters.toString();
+            configuration.queryStatement = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("insertSql"))
-            configuration.insertStatement = characters.toString();
+            configuration.insertStatement = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("updateSql"))
-            configuration.updateStatement = characters.toString();
+            configuration.updateStatement = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("deleteSql"))
-            configuration.deleteStatement = characters.toString();
+            configuration.deleteStatement = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("keywords"))
-            configuration.keywords = characters.toString();
+            configuration.keywords = characters.toString().trim();
         else if (elementName.equalsIgnoreCase("configuration")) {
             // using the current systems configurations save the data
             // for now just print it out

@@ -122,7 +122,7 @@ public class ConfigurationHandler
 
     public static synchronized void createDatabaseSchema(Statement stmt)
     {
-        String sql = "CREATE TABLE CONFIGURATIONS (" + // CONFIGURATION_ID BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY, " +
+        String sql = "CREATE TABLE configurations (" + // CONFIGURATION_ID BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY, " +
             "CONNECTION_NAME VARCHAR(50), PATH VARCHAR(1000) PRIMARY KEY, " +
             "QUERY_STATEMENT VARCHAR(2000) NOT NULL, INSERT_STATEMENT VARCHAR(1000), UPDATE_STATEMENT VARCHAR(1000), DELETE_STATEMENT VARCHAR(1000), KEYWORDS VARCHAR(2000))";
         try {stmt.execute(sql);log.info("SYSTEM TABLE [CONFIGURATIONS] CREATED");}
@@ -131,7 +131,7 @@ public class ConfigurationHandler
         // create the default data for this table
         // keep it simple for now and run some DDL to create the tables and such.  Later we may look at running a file
         //  that can be streamed so we can do automatic updates and such
-        sql = "INSERT INTO CONFIGURATIONS (CONNECTION_NAME, PATH, " +
+        sql = "INSERT INTO configurations (CONNECTION_NAME, PATH, " +
             "QUERY_STATEMENT, INSERT_STATEMENT, UPDATE_STATEMENT, DELETE_STATEMENT, KEYWORDS) VALUES (" +
             "'default', '/configurations', 'SELECT * FROM CONFIGURATIONS', " +
             "'INSERT INTO CONFIGURATIONS (CONNECTION_NAME, PATH, QUERY_STATEMENT, INSERT_STATEMENT, UPDATE_STATEMENT, DELETE_STATEMENT, KEYWORDS) " +
@@ -142,7 +142,7 @@ public class ConfigurationHandler
         log.debug(sql);
         try {stmt.execute(sql);log.info("SYSTEM [CONFIGURATIONS] DEFAULT DATA CREATED");}
         catch (SQLException sqlex) {log.fatal("Exception attempting to create default configurations data: ", sqlex);}
-        sql = "INSERT INTO CONFIGURATIONS (CONNECTION_NAME, PATH, " +
+        sql = "INSERT INTO configurations (CONNECTION_NAME, PATH, " +
             "QUERY_STATEMENT, INSERT_STATEMENT, UPDATE_STATEMENT, DELETE_STATEMENT, KEYWORDS) VALUES (" +
             "'default', '/connections', 'SELECT * FROM CONNECTIONS', " +
             "'INSERT INTO CONNECTIONS (NAME, TYPE, JDBC_DRIVER, JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD, JNDI_NAME, JNDI_CONTEXT, DESCRIPTION) " +
@@ -155,16 +155,27 @@ public class ConfigurationHandler
         try {stmt.execute(sql);log.info("SYSTEM [CONNECTIONS] DEFAULT DATA CREATED");}
         catch (SQLException sqlex) {log.fatal("Exception attempting to create default configurations data for connections: ", sqlex);}
 
-        sql = "CREATE TABLE SYSREG (SYSREG_CODE VARCHAR(50) PRIMARY KEY, SYSREG_VALUE VARCHAR(255) NOT NULL)";
+        sql = "CREATE TABLE sysreg (SYSREG_CODE VARCHAR(50) PRIMARY KEY, SYSREG_VALUE VARCHAR(255) NOT NULL)";
         try {stmt.execute(sql);log.info("SYSTEM TABLE [SYSREG] CREATED");}
         catch (SQLException sqlex) {log.fatal("Exception attempting to create sysreg table: ", sqlex);}
         log.info("created sysreg table.");
 
         // create the default data for this table
-        sql = "INSERT INTO SYSREG VALUES ('DB_VERSION', '1.0.0')";
+        sql = "INSERT INTO sysreg VALUES ('DB_VERSION', '1.0.0')";
         try {stmt.execute(sql);log.info("SYSTEM [SYSREG] DEFAULT DATA CREATED");}
         catch (SQLException sqlex) {log.fatal("Exception attempting to create default sysreg data: ", sqlex);}
         log.info("created sysreg data.");
+
+        sql = "CREATE TABLE test (id MEDIUMINT NOT NULL AUTO_INCREMENT, name VARCHAR(255) NOT NULL)";
+        try {stmt.execute(sql);log.info("DATA TABLE [TEST] CREATED");}
+        catch (SQLException sqlex) {log.fatal("Exception attempting to create test table: ", sqlex);}
+        log.info("created test table.");
+
+        // create the default data for this table
+        sql = "INSERT INTO test (name) VALUES ('testing')";
+        try {stmt.execute(sql);log.info("DATA TABLE [TEST] DEFAULT DATA CREATED");}
+        catch (SQLException sqlex) {log.fatal("Exception attempting to create default test data: ", sqlex);}
+        log.info("created test data.");
     }
 
     public static synchronized void clearCache() {
