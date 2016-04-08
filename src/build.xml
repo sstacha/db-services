@@ -102,7 +102,7 @@
         </copy>
         <echo message="********** COMPILING **********"/>
         <!-- simple compile tag, but note the debug variable; change if needed -->
-        <javac srcdir="${dir.build.code}" destdir="${dir.build.classes}" debug="on" deprecation="on">
+        <javac srcdir="${dir.build.code}" destdir="${dir.build.classes}" debug="on" deprecation="on" target="1.6">
             <classpath refid="project.classpath"/>
         </javac>
     </target>

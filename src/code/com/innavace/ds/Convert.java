@@ -206,6 +206,12 @@ public class Convert {
                     sdf.applyPattern("dd/MM/yy");
                     if (value == null)
                         value = parseDate(string, sdf);
+                    sdf.applyPattern("d/MM/yyyy HH:mm:ss a");
+                    if (value == null)
+                        value = parseDate(string, sdf);
+                    sdf.applyPattern("d/MM/yyyy HH:mm:ss");
+                    if (value == null)
+                        value = parseDate(string, sdf);
                     sdf.applyPattern("d/MM/yyyy");
                     if (value == null)
                         value = parseDate(string, sdf);
