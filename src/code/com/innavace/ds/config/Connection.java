@@ -169,7 +169,7 @@ public class Connection {
         p.setTestOnReturn(false);
         p.setValidationInterval(30000);
         p.setTimeBetweenEvictionRunsMillis(30000);
-        p.setMaxActive(100);
+        p.setMaxActive(300);
         p.setInitialSize(2);
         p.setMaxWait(10000);
         p.setRemoveAbandonedTimeout(60);
