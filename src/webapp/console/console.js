@@ -430,7 +430,7 @@ app.controller("ConfigurationsController", function($scope, $http, Configuration
 				modified=true;
 		});
 		return modified;
-	}
+	};
 	
 	$scope.showTestConfiguration = function() {
 		console.log ("building test parameters...");

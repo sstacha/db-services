@@ -10,7 +10,7 @@
             			{{connection.name}}
             		</div>
             	</div>            	
-            	<div class="row">
+            	<div class="row" data-ng-show="connection.type='jdbc'">
             		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="connection.jdbc_driver">
 						driver:
 					</div>
@@ -18,7 +18,7 @@
 						{{connection.jdbc_driver}}
 					</div>
 				</div>	
-            	<div class="row">
+            	<div class="row" data-ng-show="connection.type='jdbc'">
             		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="connection.jdbc_url">
 						url:
 					</div>
@@ -26,14 +26,31 @@
 						{{connection.jdbc_url}}
 					</div>
 				</div>	
-             	<div class="row">
+             	<div class="row" data-ng-show="connection.type='jdbc'">
             		<div class="col-md-1 nav-bordered-rt field-label" data-ng-show="connection.description">
 						notes:
 					</div>
 					<div class="col-md-11 field required" data-ng-show="connection.description">
 						{{connection.description}}
 					</div>
-				</div>	           
+				</div>
+                <div class="row" data-ng-show="connection.type='jndi'">
+                    <div class="col-md-1 nav-bordered-rt field-label" data-ng-show="connection.jndi_name">
+                        jndi name:
+                    </div>
+                    <div class="col-md-11 field required" data-ng-show="connection.jndi_name">
+                        {{connection.jndi_name}}
+                    </div>
+                </div>
+                <div class="row" data-ng-show="connection.type='jndi'">
+                    <div class="col-md-1 nav-bordered-rt field-label" data-ng-show="connection.jndi_context">
+                        jndi context:
+                    </div>
+                    <div class="col-md-11 field" data-ng-show="connection.jndi_context">
+                        {{connection.jndi_context}}
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -54,25 +71,42 @@
                         <label for="connection_name">Name</label>
                         <input class="form-control" type="text" id="connection_name" name="name" data-ng-model="selectedConnection.name"/>
                     </div>
-                    <input type="hidden" name="type" value="jdbc"/>
                     <div class="form-group">
-                        <label for="connection_driver">Driver</label>
-                        <input class="form-control" type="text" id="connection_driver" name="driver" data-ng-model="selectedConnection.jdbc_driver"/>
+                        <label for="connection-type">Connection</label>
+                        <select id=connection-type name="type" data-ng-model="selectedConnection.type">
+                            <option value="jdbc">jdbc</option>
+                            <option value="jndi">jndi</option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <label for="connection_url">Url</label>
-                        <input class="form-control" type="text" id="connection_url" name="url" data-ng-model="selectedConnection.jdbc_url"/>
+                    <!--<input type="hidden" name="type" value="jdbc"/>-->
+                    <div id="show-jdbc" data-ng-show="selectedConnection.type=='jdbc'" style="margin-left: 20px;">
+                        <div class="form-group">
+                            <label for="connection_driver">Driver</label>
+                            <input class="form-control" type="text" id="connection_driver" name="driver" data-ng-model="selectedConnection.jdbc_driver"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="connection_url">Url</label>
+                            <input class="form-control" type="text" id="connection_url" name="url" data-ng-model="selectedConnection.jdbc_url"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="connection_username">Username</label>
+                            <input class="form-control" type="text" id="connection_username" name="login" data-ng-model="selectedConnection.jdbc_username"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="connection_password">Password</label>
+                            <input class="form-control" type="text" id="connection_password" name="password" data-ng-model="selectedConnection.jdbc_password"/>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="connection_username">Username</label>
-                        <input class="form-control" type="text" id="connection_username" name="login" data-ng-model="selectedConnection.jdbc_username"/>
+                    <div id="show-jndi" data-ng-show="selectedConnection.type=='jndi'" style="margin-left: 20px;">
+                        <div class="form-group">
+                            <label for="jndi_name">JNDI Name (jdbc/testdb)</label>
+                            <input class="form-control" type="text" id="jndi_name" name="jndi-name" data-ng-model="selectedConnection.jndi_name"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="jndi_context">JNDI Context (java:comp/env/)</label>
+                            <input class="form-control" type="text" id="jndi_context" name="jndi-context" data-ng-model="selectedConnection.jndi_context"/>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="connection_password">Password</label>
-                        <input class="form-control" type="text" id="connection_password" name="password" data-ng-model="selectedConnection.jdbc_password"/>
-                    </div>
-                    <input type="hidden" name="jndi-name" value="" />
-                    <input type="hidden" name="jndi-context" value="" />
                     <div class="form-group">
                         <label for="connection_description">Description</label>
                         <input class="form-control" type="text" id="connection_description" name="description" data-ng-model="selectedConnection.description"/>

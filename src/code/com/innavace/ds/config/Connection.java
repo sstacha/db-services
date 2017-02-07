@@ -15,6 +15,7 @@
  */
 package com.innavace.ds.config;
 
+import com.innavace.ds.Convert;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
@@ -86,15 +87,18 @@ public class Connection {
             // return the connection if possible from the JNDI calls
             // Obtain our environment naming context
             // Ex: context="java:comp/env"  datasource="jdbc/EmployeeDB"
-            Context initCtx = new InitialContext();
-            Context envCtx;
-            if (jndiContext != null && jndiContext.length() > 0)
-                envCtx = (Context) initCtx.lookup(jndiContext);
-            else
-                envCtx = initCtx;
-
+            Context ctx = new InitialContext();
+//            Context envCtx;
+//            if (jndiContext != null && jndiContext.length() > 0)
+//                envCtx = (Context) initCtx.lookup(jndiContext);
+//            else
+//                envCtx = initCtx;
+            String jndiSearch = jndiContext;
+            if (jndiSearch != null && jndiSearch.length() > 0 && (!jndiSearch.endsWith("/")))
+                jndiSearch += '/';
+            jndiSearch += jndiDatasource;
             // Look up our data source
-            DataSource ds = (DataSource) envCtx.lookup(jndiDatasource);
+            DataSource ds = (DataSource) ctx.lookup(jndiSearch);
 
             // Allocate and use a connection from the pool then put it back
             connection = ds.getConnection();
@@ -134,100 +138,65 @@ public class Connection {
 
     public java.sql.Connection getConnection() throws NamingException, SQLException
     {
-        log.debug("datasource: " + dataSource);
-        if (dataSource != null) {
+        // return a connection based on type
+        if (this.type.equalsIgnoreCase("jndi")) {
+            // return the connection if possible from the JNDI calls
+            // Obtain our environment naming context
+            // Ex: context="java:comp/env"  datasource="jdbc/EmployeeDB"
+            Context initCtx = new InitialContext();
+            Context envCtx;
+            if (Convert.toString(jndiContext).length() > 0)
+                envCtx = (Context) initCtx.lookup(jndiContext);
+            else
+                envCtx = initCtx;
+
+            // Look up our data source
+            DataSource ds = (DataSource) envCtx.lookup(jndiDatasource);
+
+            // Allocate and use a connection from the pool
+            return ds.getConnection();
+        }
+        else if (this.type.equalsIgnoreCase("jdbc")) {
+            log.debug("datasource: " + dataSource);
+            if (dataSource != null) {
+                return dataSource.getConnection();
+            }
+
+            log.debug("building datasource pool from properties: [" + jdbcDriver + "]: " + jdbcUrl + " @ " + jdbcUserName + " / " + jdbcPassword);
+            // attempt to set up the datasource for the first time and return a connection
+            PoolProperties p = new PoolProperties();
+            p.setUrl(jdbcUrl);
+            p.setDriverClassName(jdbcDriver);
+            p.setUsername(jdbcUserName);
+            p.setPassword(jdbcPassword);
+            p.setJmxEnabled(true);
+//            p.setTestWhileIdle(false);
+            p.setTestOnBorrow(true);
+            p.setValidationQuery("SELECT 1");
+//            p.setTestOnReturn(false);
+//            p.setValidationInterval(30000);
+//            p.setTimeBetweenEvictionRunsMillis(30000);
+            p.setMaxActive(300);
+            p.setInitialSize(2);
+//            p.setMaxWait(10000);
+//            p.setRemoveAbandonedTimeout(60);
+//            p.setMinEvictableIdleTimeMillis(30000);
+//            p.setMinIdle(10);
+//            p.setLogAbandoned(true);
+//            p.setRemoveAbandoned(true);
+            p.setJdbcInterceptors(
+                    "org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;"+
+                    "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer");
+            dataSource = new DataSource();
+            dataSource.setPoolProperties(p);
+            log.debug("set properties...");
             return dataSource.getConnection();
         }
+        else {
+            System.out.println("CONNECTION TYPE [" + type + "] WAS REQUESTED BUT THE CODE BLOCK WAS NOT CREATED TO HANDLE THIS TYPE!");
+            return null;
+        }
 
-//        // create a connection via driver
-//        // todo : change this to tomcat connection pooling with possible multiple pools for custering / cloud
-//        log.debug("ATTEMPTING TO CREATE JDBC CONNECTION: [" + jdbcDriver + " @ " + jdbcUrl + "] " + jdbcUserName + " / " + jdbcPassword);
-//
-//        // check that we can create a driver class instance
-//        try {Class.forName(jdbcDriver);}
-//        catch (ClassNotFoundException cnfe) {
-//            log.fatal("CONNECTION DRIVER LOAD EXCEPTION: DRIVER [" + jdbcDriver + "] CLASSES NOT FOUND!");
-//            throw new SQLException(cnfe);
-//        }
-//        log.debug("loaded driver...");
-//        try {return DriverManager.getConnection(jdbcUrl, jdbcUserName, jdbcPassword);}
-//        catch (SQLException ex) {
-//            log.fatal("CONNECTION CREATION EXCEPTION: " + ex);
-//            throw(ex);
-//        }
-        log.debug("building datasource pool from properties: [" + jdbcDriver + "]: " + jdbcUrl + " @ " + jdbcUserName + " / " + jdbcPassword);
-        // attempt to set up the datasource for the first time and return a connection
-        PoolProperties p = new PoolProperties();
-        p.setUrl(jdbcUrl);
-        p.setDriverClassName(jdbcDriver);
-        p.setUsername(jdbcUserName);
-        p.setPassword(jdbcPassword);
-        p.setJmxEnabled(true);
-        p.setTestWhileIdle(false);
-        p.setTestOnBorrow(true);
-        p.setValidationQuery("SELECT 1");
-        p.setTestOnReturn(false);
-        p.setValidationInterval(30000);
-        p.setTimeBetweenEvictionRunsMillis(30000);
-        p.setMaxActive(300);
-        p.setInitialSize(2);
-        p.setMaxWait(10000);
-        p.setRemoveAbandonedTimeout(60);
-        p.setMinEvictableIdleTimeMillis(30000);
-        p.setMinIdle(10);
-        p.setLogAbandoned(true);
-        p.setRemoveAbandoned(true);
-        p.setJdbcInterceptors(
-          "org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;"+
-          "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer");
-        dataSource = new DataSource();
-        dataSource.setPoolProperties(p);
-        log.debug("set properties...");
-        return dataSource.getConnection();
-        // return a connection based on type
-//        if (this.type.equalsIgnoreCase("jndi")) {
-//            // return the connection if possible from the JNDI calls
-//            // Obtain our environment naming context
-//            // Ex: context="java:comp/env"  datasource="jdbc/EmployeeDB"
-//            Context initCtx = new InitialContext();
-//            Context envCtx;
-//            if (Convert.toString(jndiContext).length() > 0)
-//                envCtx = (Context) initCtx.lookup(jndiContext);
-//            else
-//                envCtx = initCtx;
-//
-//            // Look up our data source
-//            DataSource ds = (DataSource) envCtx.lookup(jndiDatasource);
-//
-//            // Allocate and use a connection from the pool
-//            return ds.getConnection();
-//        }
-//        else if (this.type.equalsIgnoreCase("jdbc")) {
-//            java.sql.Connection con;
-//
-//            // create a connection via driver
-//            // todo : change this to tomcat connection pooling with possible multiple pools for custering / cloud
-//            System.out.println("ATTEMPTING TO CREATE JDBC CONNECTION: [" + jdbcDriver + " @ " + jdbcUrl + "] " + jdbcUserName + " / " + jdbcPassword);
-//
-//            // check that we can instaciate the driver class
-//            try {Class.forName(jdbcDriver);}
-//            catch (ClassNotFoundException cnfe) {
-//                System.out.println("CONNECTION DRIVER LOAD EXCEPTION: DRIVER [" + jdbcDriver + "] CLASSES NOT FOUND!");
-//                throw new SQLException(cnfe);
-//            }
-//            System.out.println("loaded driver...");
-//            try {con = DriverManager.getConnection(jdbcUrl, jdbcUserName, jdbcPassword);}
-//            catch (SQLException ex) {
-//                System.out.println("CONNECTION CREATION EXCEPTION: " + ex);
-//                throw(ex);
-//            }
-//            System.out.println("created connection...");
-//            return con;
-//        }
-//        else {
-//            System.out.println("CONNECTION TYPE [" + type + "] WAS REQUESTED BUT THE CODE BLOCK WAS NOT CREATED TO HANDLE THIS TYPE!");
-//            return null;
-//        }
     }
 
     public void close()

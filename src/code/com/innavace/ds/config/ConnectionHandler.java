@@ -333,6 +333,13 @@ public class ConnectionHandler
         BasicConfigurator.configure();
         try {
             ConnectionHandler.init();
+//            Collection<Connection> connections = ConnectionHandler.connectionsMap.values();
+//            for (Connection con : connections)
+//                System.out.println(con);
+            Connection con = ConnectionHandler.get("sas_test");
+            System.out.println(con.jndiContext);
+            System.out.println(con.jndiDatasource);
+            con.test();
             ConnectionHandler.destroy();
         }
         catch (Exception ex) {System.out.println("Exception in main: " + ex);}
