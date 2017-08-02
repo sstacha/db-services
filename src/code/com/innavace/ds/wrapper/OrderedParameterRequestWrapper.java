@@ -23,10 +23,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: sstacha
@@ -62,6 +59,15 @@ public class OrderedParameterRequestWrapper extends HttpServletRequestWrapper {
             // next parse the strings and put into parameter map in order
             String body = toString();
             String qs = request.getQueryString();
+            log.debug("body: " + body);
+            log.debug("");
+            log.debug("headers");
+            log.debug("-------");
+            // Print all headers
+            List<String> headers = Collections.list(request.getHeaderNames());
+            for (String header : headers) {
+                log.debug(header + " - " + request.getHeader(header));
+            }
             log.debug("qs: " + qs);
             log.debug("parameter body value: " + body);
             log.debug("content type header: " + request.getHeader("content-type"));

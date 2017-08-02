@@ -21,8 +21,10 @@ package com.innavace.ds.filter;
             HttpServletRequest httpReq = (HttpServletRequest) req;
             HttpServletResponse httpResp = (HttpServletResponse) resp;
 
-            // No Origin header present means this is not a cross-domain request
-            String origin = httpReq.getHeader("Origin");
+            // No access-control-allow-origin header present means this is not a cross-domain request
+            // String origin = httpReq.getHeader("access-control-allow-origin");
+            String origin = httpReq.getHeader("origin");
+            String method = httpReq.getMethod();
              if (origin == null) {
                 // Return standard response if OPTIONS request w/o Origin header
                if ("OPTIONS".equalsIgnoreCase(httpReq.getMethod())) {

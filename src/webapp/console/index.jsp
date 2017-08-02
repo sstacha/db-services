@@ -231,7 +231,8 @@
                     <div data-ng-repeat="alert in alerts">
                         <div class="alert alert-{{alert.type}} alert-dismissable">
                             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                            {{alert.msg}}
+                            <!-- {{alert.msg}} -->
+                            <span ng-bind-html="alert.msg"></span>
                         </div>
                     </div>
                 </div>

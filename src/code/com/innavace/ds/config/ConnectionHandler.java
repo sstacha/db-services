@@ -69,7 +69,7 @@ public class ConnectionHandler
         // as a last resort if we still don't have a default connection then attempt to build from default values and add to map (DERBY or JavaDB implementation)
         if (connectionsMap.size() == 0) {
             log.debug("No configuration parameters found; attempting to create H2 in-process file database...");
-            connection = new Connection("default", "jdbc", "", "", "org.h2.Driver", "jdbc:h2:~/data/dbServices/ds", "dsadmin", "dsadmin", "system default file connection");
+            connection = new Connection("default", "jdbc", "", "", "org.h2.Driver", "jdbc:h2:~/data/dbServices/ds;AUTO_SERVER=TRUE", "dsadmin", "dsadmin", "system default file connection");
             log.debug("attempting to determine external default connection...");
             if (connection.isValid()) {
                 // first check to see if there is a reference pointer to a different database defined if inprocess database

@@ -143,14 +143,14 @@
     <target name="build.webapp" if="dir.src.webapp.exists" depends="build.webapp.code, build.webapp.src.lib">
 	    <echo message="********** PACKAGING WAR TO DIST **********"/>
         <!-- create the war file and place in the bin directory -->
-        <jar jarfile="${dir.dist}/ds.war" basedir="${dir.build.webapp}"/>
+        <jar jarfile="${dir.dist}/api.war" basedir="${dir.build.webapp}"/>
         <!-- create the unzipped application folder for easy deployment -->
-        <copy todir="${dir.dist}/ds">
+        <copy todir="${dir.dist}/api">
             <fileset dir="${dir.build.webapp}"  excludes=".DS_Store"/>
         </copy>
         <!-- move the binary completed app to the bin directory for checkin -->
         <!-- NOTE: we assume that directory is already created and there -->
-        <copy file="${dir.dist}/ds.war" todir="../bin/"/>
+        <copy file="${dir.dist}/api.war" todir="../bin/"/>
     </target>
 
 </project>
