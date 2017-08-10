@@ -689,23 +689,26 @@ public class Configuration
         string = Convert.replace(string, "\r\n", "\n");
         string = Convert.replace(string, "\r", "\n");
         string = Convert.replace(string, "\n", "\\n");
+        // convert all quotes to escaped quotes
+//        string = Convert.replace(string, "\"", "\\\"", "\\\"");
+        string = Convert.replace(string, "\"", "\\\"");
 //        string = replace(string, "'", "\\'", "\\'");
 //        System.out.println(string);
       	return string;
     }
 
     public static void main (String[] args) {
-        Configuration configuration = new Configuration();
+//        Configuration configuration = new Configuration();
 //        String originalSql = "update table bla set values (?) and id=?|l:[0]| where key = ? |i|";
-        String originalSql = "UPDATE CONFIGURATIONS SET  KEYWORDS=? WHERE PATH=?";
+//        String originalSql = "UPDATE CONFIGURATIONS SET  KEYWORDS=? WHERE PATH=?";
 //        String strippedSql = configuration.stripOptions("update table bla set id=?|l:[0]| where key = ? |i|");
-        System.out.println(configuration.stripOptions(originalSql));
+//        System.out.println(configuration.stripOptions(originalSql));
 //        System.out.println("strippedOptionString: " + strippedSql);
 //        System.out.println(configuration.getOption(originalSql, 1));
 //        System.out.println(configuration.getOption(originalSql, 2));
 //        System.out.println(configuration.getOption(originalSql, 3));
 //        System.out.println(configuration.getOption(originalSql, 10));
-        System.out.println(configuration.getOptions(originalSql));
+//        System.out.println(configuration.getOptions(originalSql));
     }
 
 }
