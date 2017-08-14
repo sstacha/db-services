@@ -684,15 +684,21 @@ public class Configuration
             return "";
     }
 
+    // todo: change the the systems return type not just osx's
     private String toJSONString(String string) {
+        // strip any bom character
+        string = Convert.replace(string, "\uFEFF", "");
         // convert all crlf and lf to newline; escape with extra \
-        string = Convert.replace(string, "\r\n", "\n");
-        string = Convert.replace(string, "\r", "\n");
-        string = Convert.replace(string, "\n", "\\n");
-        // convert all quotes to escaped quotes
-//        string = Convert.replace(string, "\"", "\\\"", "\\\"");
+//        string = Convert.replace(string, "\r\n", "\n");
+//        string = Convert.replace(string, "\r", "\n");
+        string = Convert.replace(string, "\r", "\\r", "\\r");
+        string = Convert.replace(string, "\n", "\\n", "\\n");
+        // escape any whitespace chars that cause problems
+        string = Convert.replace(string, "\t", "\\t", "\\t");
+        // convert all quotes to double escaped quotes
         string = Convert.replace(string, "\"", "\\\"");
-//        string = replace(string, "'", "\\'", "\\'");
+        string = Convert.replace(string, "'", "\\\'", "\\\'");
+        string = Convert.replace(string, "\'", "\\\'", "\\\'");
 //        System.out.println(string);
       	return string;
     }
