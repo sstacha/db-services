@@ -11,6 +11,12 @@ var ctx = window.ctx;
 console.log('base_url: ' + base_url);
 console.log('ctx: ' + ctx);
 
+function unescape_quote(input) {
+    if (input!==undefined && input!==null)
+        input = input.replace(/\\'/g, '\'');
+    return input;
+};
+
 app.factory('ConfigurationService', function($http) {
 	var urlBase = ctx + "/_system/configurations";
 	return {
@@ -405,6 +411,11 @@ app.controller("ConfigurationsController", function($scope, $http, Configuration
 		}
 	};
 	$scope.editConfiguration = function(data) {
+        data.query_statement = unescape_quote(data.query_statement);
+        data.insert_statement = unescape_quote(data.insert_statement);
+        data.update_statement = unescape_quote(data.update_statement);
+        data.delete_statement = unescape_quote(data.delete_statement);
+
 		$scope.selectedConfiguration = data;
 		$scope.dbConfiguration = jQuery.extend({},data);
 		$scope.msgbox.header = $scope.selectedConfiguration.path;
