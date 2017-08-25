@@ -787,12 +787,22 @@ app.controller("DataController", function($scope, $http, DataService) {
 
 app.filter('capitalize', function() {
   	return function(input, scope) {
-    	if (input!=undefined && input!=null) {
+    	if (input!==undefined && input!==null) {
     		input = input.toLowerCase();
     		return input.substring(0,1).toUpperCase()+input.substring(1);
     	}
     	return "";
   	}  	
+});
+
+app.filter('unescape_quote', function() {
+    return function(input, scope) {
+        if (input!==undefined && input!==null) {
+            input = input.replace(/\\'/g, '\'');
+            return input;
+        }
+        return "";
+    }
 });
 
 app.directive("fileread", [function () {

@@ -19,7 +19,7 @@
 						query:
 					</div>
 					<div class="col-md-11 field required" data-ng-show="configuration.query_statement">
-						{{configuration.query_statement}}
+						{{configuration.query_statement | unescape_quote}}
 					</div>
 				</div>	
             	<div class="row">
@@ -27,7 +27,7 @@
 						insert:
 					</div>
 					<div class="col-md-11 field required" data-ng-show="configuration.insert_statement">
-						{{configuration.insert_statement}}
+						{{configuration.insert_statement | unescape_quote}}
 					</div>
 				</div>	
             	<div class="row">
@@ -35,7 +35,7 @@
 						update:
 					</div>
 					<div class="col-md-11 field required" data-ng-show="configuration.update_statement">
-						{{configuration.update_statement}}
+						{{configuration.update_statement | unescape_quote}}
 					</div>
 				</div>	
             	<div class="row">
@@ -43,7 +43,7 @@
 						delete:
 					</div>
 					<div class="col-md-11 field required" data-ng-show="configuration.delete_statement">
-						{{configuration.delete_statement}}
+						{{configuration.delete_statement | unescape_quote}}
 					</div>
 				</div>	
             	<div class="row">
@@ -51,7 +51,7 @@
 						tags:
 					</div>
 					<div class="col-md-11 field required" data-ng-show="configuration.keywords">
-						{{configuration.keywords}}
+						{{configuration.keywords | unescape_quote}}
 					</div>
 				</div>	
             </div>
@@ -81,19 +81,19 @@
                     </div>
                     <div class="form-group">
                         <label for="configuration-querysql">Query SQL</label>
-                        <textarea class="form-control" rows="3" cols="49" id="configuration-querysql" name="querysql" data-ng-model="selectedConfiguration.query_statement"></textarea>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-querysql" name="querysql" data-ng-model="selectedConfiguration.query_statement | unescape_quote"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="configuration-insertsql">Insert SQL</label>
-                        <textarea class="form-control" rows="3" cols="49" id="configuration-insertsql" name="insertsql" data-ng-model="selectedConfiguration.insert_statement"></textarea>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-insertsql" name="insertsql" data-ng-model="selectedConfiguration.insert_statement | unescape_quote"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="configuration-updatesql">Update SQL</label>
-                        <textarea class="form-control" rows="3" cols="49" id="configuration-updatesql" name="updatesql" data-ng-model="selectedConfiguration.update_statement"></textarea>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-updatesql" name="updatesql" data-ng-model="selectedConfiguration.update_statement | unescape_quote"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="configuration-deletesql">Delete SQL</label>
-                        <textarea class="form-control" rows="3" cols="49" id="configuration-deletesql" name="deletesql" data-ng-model="selectedConfiguration.delete_statement"></textarea>
+                        <textarea class="form-control" rows="3" cols="49" id="configuration-deletesql" name="deletesql" data-ng-model="selectedConfiguration.delete_statement | unescape_quote"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="configuration-keywords">Keywords<span class="help-text">(comma separated list)</span></label>
