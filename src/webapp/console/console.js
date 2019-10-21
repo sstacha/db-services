@@ -37,25 +37,27 @@ app.factory('ConfigurationService', function($http) {
 				url: urlBase,
 				method: "POST",
 				dataType: "json",
-				data: data,
+				data: $.param(data),
 				headers: { "Content-Type": "application/x-www-form-urlencoded"}
 			});
 		},
 		update: function (id, data) {
-			if (id && id.length > 0)
+			if (id && id.length > 0) {
+				data.push({name: "$action", value: "put"});
 				return $http({
 					url: urlBase,
-					method: "PUT",
+					method: "POST",
 					dataType: "json",
-					data: data,
+					data: $.param(data),
 					headers: { "Content-Type": "text/html"}
 				});
+			}
 			else
 				return $http({
 					url: urlBase,
 					method: "POST",
 					dataType: "json",
-					data: data,
+					data: $.param(data),
 					headers: { "Content-Type": "application/x-www-form-urlencoded"}
 				});
 		},
@@ -92,27 +94,30 @@ app.factory('ConnectionService', function($http) {
 				url: urlBase,
 				method: "POST",
 				dataType: "json",
-				data: data,
+				data: $.param(data),
 				headers: { "Content-Type": "application/x-www-form-urlencoded"}
 			});
 			//return $http.post(urlBase, data);
 		},
 		update: function (id, data) {
-			if (id && id.length > 0)
+			if (id && id.length > 0) {
+				data.push({name: "$action", value: "put"});
 				return $http({
 					url: urlBase,
-					method: "PUT",
+					// method: "PUT",
+					method: "POST",
 					dataType: "json",
-					data: data,
-					headers: { "Content-Type": "text/html"}
+					data: $.param(data),
+					headers: {"Content-Type": "text/html"}
 				});
+			}
 				//return $http.put(urlBase, data);
 			else
 				return $http({
 					url: urlBase,
 					method: "POST",
 					dataType: "json",
-					data: data,
+					data: $.param(data),
 					headers: { "Content-Type": "application/x-www-form-urlencoded"}
 				});
 
@@ -368,11 +373,12 @@ app.controller("ConfigurationsController", function($scope, $http, Configuration
 	
 	$scope.saveConfiguration = function() {
 		var form = $("#configuration-form");
-		var form_data = form.serialize();
-		console.log ("data: " + form_data);
+		var form_array = form.serializeArray();
+		// var form_data = form.serialize();
+		// console.log ("data: " + form_data);
 
 		// async save the configuration to the database
-		ConfigurationService.update($scope.selectedConfiguration.$$hashKey, form_data).then(function (data) {
+		ConfigurationService.update($scope.selectedConfiguration.$$hashKey, form_array).then(function (data) {
 			prettyPrintConsole(data);
 			$scope.msgbox.header = $scope.selectedConfiguration.path;
 			$("#dlg-msg").html(prettyPrint(toProduction(data)));
@@ -596,11 +602,12 @@ app.controller("ConnectionsController", function($scope, $http, ConnectionServic
 
 	$scope.saveConnection = function() {
 		var form = $("#connection-form");
-		var form_data = form.serialize();
-		console.log ("data: " + form_data);
+		var form_array = form.serializeArray();
+		// var form_data = form.serialize();
+		// console.log ("data: " + form_data);
 
 		// async save the connection to the database
-		ConnectionService.update($scope.selectedConnection.$$hashKey, form_data).then(function (data) {
+		ConnectionService.update($scope.selectedConnection.$$hashKey, form_array).then(function (data) {
 			prettyPrintConsole(data);
 			$scope.msgbox.header = $scope.selectedConnection.name;
 			$("#dlg-msg").html(prettyPrint(toProduction(data)));
