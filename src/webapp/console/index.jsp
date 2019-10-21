@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
     <!-- OUR CSS -->
-   	<link rel="stylesheet" href="console.css" type="text/css">
+<%--   	<link rel="stylesheet" href="console.css" type="text/css">--%>
     <!-- link rel="stylesheet" href="forms.css" type="text/css" -->
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->

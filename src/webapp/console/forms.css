@@ -20,7 +20,7 @@ form fieldset div.notes {
     font-size: 88%;
 }
 form fieldset div.notes h4 {
-    background-image: url(../images/info24.png);
+    /*background-image: url(../images/info24.png);*/
     background-repeat: no-repeat;
     background-position: top left;
     margin-top: 4px;
