@@ -43,7 +43,7 @@ app.factory('ConfigurationService', function($http) {
 		},
 		update: function (id, data) {
 			if (id && id.length > 0) {
-				data.push({name: "$action", value: "put"});
+				data.push({name: "$action", value: "update"});
 				return $http({
 					url: urlBase,
 					method: "POST",
@@ -101,7 +101,7 @@ app.factory('ConnectionService', function($http) {
 		},
 		update: function (id, data) {
 			if (id && id.length > 0) {
-				data.push({name: "$action", value: "put"});
+				data.push({name: "$action", value: "update"});
 				return $http({
 					url: urlBase,
 					// method: "PUT",
