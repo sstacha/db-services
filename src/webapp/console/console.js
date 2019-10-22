@@ -466,11 +466,18 @@ app.controller("ConfigurationsController", function($scope, $http, Configuration
 		var form = $("#test-configuration-form");
         //alert("form action: " + form.attr('action'));
         //alert("serialized params: " + form.serialize());
+		var form_array = form.serializeArray();
+		var form_method = form.attr('method');
+		if (form_method.toUpperCase() === 'PUT') {
+			form_method = "POST";
+			form_array.push({name: "$action", value: "update"});
+		}
+		var data = $.param(form_array);
 		$.ajax({
 			async: false,
-			type: form.attr('method'),
+			type: form_method,
 			url: (ctx + $scope.selectedConfiguration.path),
-			data: form.serialize(),
+			data: data,
 			success: function(data) {
 				prettyPrintConsole(data);
 				$scope.testHeaders = [];
@@ -685,11 +692,18 @@ app.controller("ConnectionsController", function($scope, $http, ConnectionServic
 //         alert("form action: " + form.attr('action'));
 //         alert("serialized params: " + form.serialize());
         console.log('params: ' + form.serialize());
+		var form_array = form.serializeArray();
+		var form_method = form.attr('method');
+        if (form_method.toUpperCase() === 'PUT') {
+			form_method = "POST";
+			form_array.push({name: "$action", value: "update"});
+		}
+        var data = $.param(form_array);
 		$.ajax({
 			async: false,
-			type: form.attr('method'),
+			type: form_method,
 			url: (ctx + '/_system/connections/test'),
-			data: form.serialize(),
+			data: data,
 			success: function(data) {
 				prettyPrintConsole(data);
 				$scope.testHeaders = [];
