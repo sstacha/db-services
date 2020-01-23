@@ -193,7 +193,12 @@ public class ConnectionHandler
         if (connectionConfiguration == null)
             throw new SQLException("/connections configuration not found!");
         OrderedParameterWrapper parameterWrapper = new OrderedParameterWrapper("application/json", null, connection.toJSON());
-        connectionConfiguration.execute(parameterWrapper.getParameterMap(), "text/json", ConnectionHandler.hasConnection(connection.name) ? "update" : "insert");
+        if (ConnectionHandler.hasConnection(connection.name)) {
+            parameterWrapper.addParameter("w_name", connection.name);
+            connectionConfiguration.execute(parameterWrapper.getParameterMap(), "text/json", "update");
+        }
+        else
+            connectionConfiguration.execute(parameterWrapper.getParameterMap(), "text/json", "insert");
         return true;
     }
 

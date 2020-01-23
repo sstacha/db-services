@@ -350,7 +350,7 @@ public class OrderedParameterWrapper {
     }
 
     // add the parameter to the map
-    private void addParameter(String key, String value) {
+    public void addParameter(String key, String value) {
         // make sure we have a key; if so and we have the parameter already then add an additional string array value; else add it
         if (key.equalsIgnoreCase(""))
             log.debug("key was not passed; skipping...");

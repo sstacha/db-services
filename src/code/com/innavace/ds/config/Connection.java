@@ -228,11 +228,12 @@ public class Connection {
         buffer.append("\", \"jdbc_driver\":\"").append(this.jdbcDriver).append("\", \"jdbc_url\":\"").append(this.jdbcUrl);
         buffer.append("\", \"jdbc_username\":\"").append(this.jdbcUserName).append("\", \"jdbc_password\":\"").append(this.jdbcPassword);
         buffer.append("\", \"jndi_context\":\"").append(this.jndiContext).append("\", \"jndi_name\":\"").append(this.jndiDatasource);
-        buffer.append("\", \"description\":\"").append(this.description).append("\", \"internal\":\"");
-        if (this.type.equalsIgnoreCase("jdbc") && this.jdbcDriver.equalsIgnoreCase(""))
-            buffer.append("true");
-        else
-            buffer.append("false");
+        buffer.append("\", \"description\":\"").append(this.description);
+//        buffer.append("\", \"description\":\"").append(this.description).append("\", \"internal\":\"");
+//        if (this.type.equalsIgnoreCase("jdbc") && this.jdbcDriver.equalsIgnoreCase(""))
+//            buffer.append("true");
+//        else
+//            buffer.append("false");
         buffer.append("\"}");
         log.debug("toJSON string: " + buffer.toString());
         return buffer.toString();
