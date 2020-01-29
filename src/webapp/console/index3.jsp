@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Data Services Console</title>
-	<link rel=stylesheet href=console.css type=text/css>
+<%--	<link rel=stylesheet href=console.css type=text/css>--%>
 
     <!-- link to get the jqueryui look and feel css stuff -->
     <link rel=stylesheet href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/themes/smoothness/jquery-ui.css" type=text/css>
