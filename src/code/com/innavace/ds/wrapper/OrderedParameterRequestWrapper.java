@@ -35,7 +35,7 @@ public class OrderedParameterRequestWrapper extends HttpServletRequestWrapper {
     private byte[] raw;
     private LinkedHashMap<String, String[]> parameterMap = new LinkedHashMap<String, String[]>();
 
-    private static final int MAX_SIZE = 1024 * 1024;  // 1024B = 1KB * 1024KB = 1MB
+    private static final int MAX_SIZE = 1024 * 1024 * 4;  // 1024B = 1KB * 1024KB = 1MB
     public static Logger log = Logger.getLogger(OrderedParameterRequestWrapper.class);
 
     public OrderedParameterRequestWrapper(HttpServletRequest request) {
